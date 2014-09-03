@@ -53,7 +53,7 @@ primes0 :: [Integer]
 primes0 = filter prime0 [2..]    
 
 ldp :: Integer -> Integer
-ldp n = ldpf primes1 n
+ldp = ldpf primes1
 
 ldpf :: [Integer] -> Integer -> Integer
 ldpf (p:ps) n | rem n p == 0 = p 
