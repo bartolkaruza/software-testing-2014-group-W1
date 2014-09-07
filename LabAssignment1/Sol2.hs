@@ -40,7 +40,7 @@ unique p (x:xs) = length (filter p xs) == 1
 
 --ex2.52
 parity :: [Bool] -> Bool
-parity xs = even (length (filter (\p -> p == True) xs))
+parity xs = even (length [ x | x <- xs, x == True])
 
 --ex2.53
 evenNR :: (a -> Bool) -> [a] -> Bool
