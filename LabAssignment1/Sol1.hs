@@ -40,10 +40,18 @@ count c "" = 0
 count c (x:xs) | c == x = 1 + count c xs
 			   | otherwise = count c xs
 				   
---ex1.14 init x performes as right recursion (or we could just pass an integer along with the blowup call)
+--ex1.14 init x performes as right recursion 
 blowup :: String -> String
 blowup [] = []
 blowup x = blowup (init x) ++ replicate (length x) (last x)
+
+--or we could just pass an integer along with the blowup call
+blowup' :: String -> String
+blowup' s = blow 1 s
+
+blow :: Int -> String -> String
+blow i [] = []
+blow i (x:xs) = replicate i x ++ blow (i + 1) xs
 
 --ex1.15 simple sort
 sortStr :: String -> String
