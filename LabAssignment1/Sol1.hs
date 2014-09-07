@@ -9,9 +9,6 @@ ex1b = 3-7
 ex1c = 7/3
 ex1d = 7^3
 
---ex1.4
--- no difference, because...
-
 --ex1.5
 ex15a = prime0 0
 ex15b = prime0 1
