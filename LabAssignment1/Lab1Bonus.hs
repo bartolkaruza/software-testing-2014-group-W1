@@ -56,4 +56,10 @@ foldrFilter :: (a -> Bool) -> [a] -> [a]
 foldrFilter f n = foldr (\x y -> if f x then (x:y) else y) [] n
 
 foldrConcat :: [a] -> [a] -> [a]
-foldrConcat n m = foldr (\x y -> (x:y)) [] m
+foldrConcat n m = foldr (\x y -> (x:y)) m n
+
+foldrReverse :: [a] -> [a]
+foldrReverse n = foldr (\x y -> y ++ [x]) [] n
+
+foldlReverse :: [a] -> [a]
+foldlReverse n = foldl (\x y -> x ++ [y]) n
