@@ -1,0 +1,18 @@
+
+{x⋴{1,...,9} X y{1,...,9}}
+
+n X n n <- {1,...,9}
+
+n X n <- {1,...,9}
+
+
+grid [i][j] nil
+
+∀i ∀j,j' if j ≠ j' then either gij = gij' = nil
+								or gij ≠ gij'
+∀j ∀i,i' 
+	if i ≠ i' 
+		then either gij = gij' = nil
+			or gij ≠ gij'
+∀
+∀
