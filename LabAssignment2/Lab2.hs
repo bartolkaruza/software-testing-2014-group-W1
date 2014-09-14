@@ -37,7 +37,7 @@ eL :: (a, b, c) -> c
 eL (_,_,c) = c
 
 
---Ex.2
+--Ex.2: 0.5 hours
 -- a does not derive 'Ord a', otherwise we could compare the sorted lists isPermutation xs ys = (sort xs) == (sort ys)
 isPermutation :: Eq a => [a] -> [a] -> Bool
 isPermutation [] [] = True
@@ -46,17 +46,23 @@ isPermutation (x:xs) ys =
 		then isPermutation (filter (/=x) xs) (filter (/=x) ys) 
 		else False
 		
---Ex.3 Testable properties??
+--Ex.3: 1 hour
+--test function
 testPerm :: ([Int], [Int]) -> Bool
 testPerm xs = isPermutation (fst xs) (snd xs)
-
+--the reverse is always a permutation
 validPerm :: ([Int], [Int])
 validPerm = ([x | x <- [1..100]], [y | y <- reverse [1..100]])
-
+--different lengths
 invalidPerm :: ([Int], [Int])
-invalidPerm = ([x | x <- [1..100]], [y | y <- [101..200]])
+invalidPerm = ([x | x <- [1..100]], [y | y <- [1..99]])
+--different start elements
+invalidPerm' :: ([Int], [Int])
+invalidPerm' = ([x | x <- [1..100]], [y | y <- [2..101]])
 
---Ex.4
+-- if the input contains no duplicates, this results in a stronger precondition for the test (stronger reqs on input), so the set of tests will be smaller
+
+--Ex.4: 2 hours
 perms :: Eq a => [a] -> [[a]]
 perms [] = [[]]
 perms xs = [(x:ys) | x <- xs, ys <- perms (delete x xs)]
@@ -73,14 +79,34 @@ fact :: Int -> Int
 fact 1 = 1
 fact n = n * fact(n-1)
 
---Ex. 5
+--Ex. 5: 1 hour
 isDerangement :: Eq a => [a] -> [a] -> Bool
 isDerangement xs ys = if isPermutation xs ys
 					then and (zipWith (/=) xs ys)
 					else False
 
---Ex. 6
+--Ex. 6: 0.5 hours
 deran :: Eq a => [a] -> [[a]]
 deran xs = filter (isDerangement xs) (perms xs)
 
---Ex. 7 Testable properties
+--Ex. 7: 1 hour
+--test function
+testDeran :: ([Int], [Int]) -> Bool
+testDeran xs = isDerangement (fst xs) (snd xs)
+--the reverse is always a derangement
+validDeran :: ([Int], [Int])
+validDeran = ([x | x <- [1..100]], [y | y <- reverse [1..100]])
+--the reverse is always a derangement, but now the first element is not reversed
+invalidDeran :: ([Int], [Int])
+invalidDeran = ([x | x <- [1..100]], [y | y <- 1:reverse [2..100]])
+
+--Ex. 8 Bonus: 2 hours
+arbDeran :: (Show a, Eq a) => [a] -> IO ()
+arbDeran xs = do
+	rnd <- getRndIndex (deran xs)
+	print $ deran xs!!rnd
+
+getRndIndex :: Eq a => [a] -> IO Int
+getRndIndex xs = getStdRandom (randomR (0, length xs - 1))
+
+--Ex. 9 Bonus
