@@ -31,13 +31,13 @@ module Lab2 where
 
 	-- Abstractie experiment
 	notriangle' :: Integer -> Integer -> Integer -> Bool
-	notriangle' x y z = iets (+) (<=) (||) x y z
+	notriangle' x y z = check (+) (<=) (||) x y z
 
 	rectangular' :: Integer -> Integer -> Integer -> Bool
-	rectangular' x y z = iets pythago (==) (||) x y z
+	rectangular' x y z = check pythago (==) (||) x y z
 	
-	iets :: (Integer -> Integer -> Integer) -> (Integer -> Integer -> Bool) -> (Bool -> Bool -> Bool) -> Integer -> Integer -> Integer -> Bool
-	iets o c b x y z = b (b (c (o x y) z) (c (o y z) x)) (c (o x z) y)
+	check :: (Integer -> Integer -> Integer) -> (Integer -> Integer -> Bool) -> (Bool -> Bool -> Bool) -> Integer -> Integer -> Integer -> Bool
+	check opp comp bool x y z = bool (bool (comp (opp x y) z) (comp (opp y z) x)) (comp (opp x z) y)
 	
 
 	-- Ex 2.
@@ -50,5 +50,25 @@ module Lab2 where
 	-- Ex 3.
 
 	-- Ex 4.
+
 	perms :: Eq a => [a] -> [[a]]
-	perms all@(x:xs) = foldr (\y -> ((x:delete x all)++((delete x all)++[x])):y) [[]] xs
+	perms [] = [[]]
+	perm xs = [x:ys | x <- xs, ys <- perms(delete x xs)]
+	-- The number of permutations is the factorial of the number of elements. 
+	-- The fact that the elements are unique, means you can use this to remove individual elements from the list, to permute the rest of the list
+
+
+	-- Ex 5.
+	isDerangement :: Eq a => [a] -> [a] -> Bool
+	isDerangement [] [] = True
+	isDerangement _ [] = False
+	isDerangement [] _ = False
+	isDerangement (x:xs) (y:ys) = x /= y && (isDerangement xs ys)
+
+	--perms :: Eq a => [a] -> [[a]]
+	--perms xs = foldr (\y -> ((x:delete x all)++((delete x all)++[x])):y) [[]] xs
+
+
+	--permuteElement :: [a] -> Int -> [[a]]
+	--permuteElement [] y = [[y]]
+	--permuteElement xs y = 
