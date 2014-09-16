@@ -8,7 +8,7 @@ module Main where
 		putStrLn("Enter the participants line by line")
 		putStrLn("Finish by entering an empty line")
 		xs <- getLines
-		x <- randomRIO(0, length (deran xs)) :: IO Int
+		x <- randomRIO(0, subfactorial (length xs) - 1) :: IO Int
 		printResults (zip xs ((deran xs)!!x))
 
 	getLines :: IO [String]
@@ -41,3 +41,9 @@ module Main where
 	printResults ((x,y):xs) = do 
 		putStrLn (x ++ " buys a gift for " ++ y)
 		printResults xs
+
+	subfactorial :: Int -> Int
+	subfactorial 0 = 0
+	subfactorial 1 = 0
+	subfactorial 2 = 1
+	subfactorial n = (n-1) * (subfactorial (n-1) + subfactorial (n-2))
