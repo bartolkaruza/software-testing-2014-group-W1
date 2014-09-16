@@ -3,6 +3,7 @@ module Lab2 where
 import Data.List
 import System.Random
 
+---------------
 -- assignment 1
 -- 20 minutes
 data Shape = NoTriangle 
@@ -21,6 +22,8 @@ triangle a b c | a <= 0 || b <= 0 || c <= 0 = NoTriangle
 			   | a + b >= c || b + c >= a || a + c >= b = Other
 			   | otherwise = NoTriangle
 
+			   
+---------------
 -- assignment 2
 -- 30 minutes
 isPermutation :: Eq a => [a] -> [a] -> Bool
@@ -30,6 +33,7 @@ isPermutation [] ys = False
 isPermutation all@(x:xs) ys = if ((length all) /= (length ys)) then False
 							  else isPermutation xs (delete x ys)
 	
+-------------------
 -- helper functions
 infix 1 ==>
 
@@ -42,6 +46,7 @@ infix 1 <=>
 x <=> y = x == y 
 
 
+---------------------------
 -- assignment 3 (property 1)
 -- 2 minutes
 -- we can check that lists with unequal length are not permutations
@@ -64,6 +69,7 @@ reflexivePermutation = (\x y -> isPermutation y x <=> isPermutation x y)
 equalityPermutation :: Eq a => [a] -> [a] -> Bool
 equalityPermutation = (\x y -> (x == y) ==> isPermutation x y)
 
+
 -- assignment 3 (property 4)
 -- 2 minutes
 -- we can check that if a is a permutation of b and b is a permutation of c then a is a permutation of c
@@ -72,6 +78,7 @@ commutativePermutation :: Eq a => [a] -> [a] -> [a] -> Bool
 commutativePermutation = (\ p q r -> ((isPermutation p q) && (isPermutation q r)) ==> isPermutation p r)
 
 
+---------------
 -- assignment 4
 -- 1 hour
 -- we can check these outcomes by testing if the list of permutations is of length n! where n = length of input
@@ -87,32 +94,58 @@ insert' x [y]= [[x,y], [y,x]]
 insert' x all@(y:ys) = (x:all):(map (y:) (insert' x ys))
 
 
--- assignment 5
--- 5 minutes
-isDerangement ::  [Int] -> [Int] -> Bool
-isDerangement xs ys = if isPermutation xs ys then and $ (zipWith (/=) xs ys)
-					  else False
-
--- assignment 6		
--- 5 minutes			  
--- here we need to do something to make sure that the input is a natural number
-deran :: [Int] -> [[Int]]
-deran xs = filter (isDerangement xs $) (perms xs)
-
--- we could test if there are duplicates in the list
-
--- we could test if the count is the same
--- we could test if each element in the old list is in the new list
--- Lists:
--- [1,2,3,4,5]
--- [1,1,2,3,4]
--- [1,4,5,6,7]
--- [-1,2,3,4,5]
--- [,1,2,3,4]
-
---rndDeran :: [Int] -> [Int]
---rndDeran xs = (deran xs) !! randomNr
---			where randomNr = randoms (2^(length xs)) :: Int
-			
+--------------------------------------
+--Ex.5: isDerangement function (20 minutes)
+isDerangement :: Eq a => [a] -> [a] -> Bool
+isDerangement xs ys = if isPermutation xs ys
+					then and (zipWith (/=) xs ys)
+					else False
 
 
+-----------------------------------------					
+--Ex.6: derangement generation (10 minutes)
+deran :: Eq a => [a] -> [[a]]
+deran xs = filter (isDerangement xs) (perms xs)
+
+
+---------------------------------------
+--Ex.7: tests for isDerangement (1 hour)
+--isDerangement implies that elements are not equal
+deranTest1 :: Eq a => [a] -> [a] -> Bool
+deranTest1 xs ys = (isDerangement xs ys) ==> (listsNonEqual xs ys)
+
+listsNonEqual :: Eq a => [a] -> [a] -> Bool
+listsNonEqual [] [] = True
+listsNonEqual (x:xs) (y:ys) = (x /= y) && (listsNonEqual xs ys)
+
+--test execution function
+execTest :: ([Int], [Int]) -> Bool
+execTest xs = deranTest1 (fst xs) (snd xs)
+
+--test cases
+validDeran :: ([Int], [Int])
+validDeran = ([x | x <- [1..100]], [y | y <- reverse [1..100]])
+invalidDeran :: ([Int], [Int])
+invalidDeran = ([x | x <- [1..100]], [y | y <- 1:reverse [2..100]])
+
+--execTest validDeran leads to True
+--exexTest invalidDeran leads to True
+
+	
+----------------------
+--Ex.8 Bonus1 (2 hours)
+arbDeran :: (Show a, Eq a) => [a] -> IO ()
+arbDeran xs = do
+	rnd <- getRndIndex (deran xs)
+	print $ getRndDeran xs rnd
+
+-- get random index from list of derangements
+getRndIndex :: Eq a => [a] -> IO Int
+getRndIndex xs = getStdRandom (randomR (0, length xs - 1))
+
+-- get derangement from list based on (random) index
+getRndDeran :: Eq a => [a] -> Int -> [a]
+getRndDeran xs index = (deran xs)!!index
+
+-- deranTest1 does not show that the functions works, because it only shows that the isPermutaton function is correct
+-- tests for arbDeran should show that the permutation was picked randomly(which is difficult) and that the the resulting list actually is a permutation
