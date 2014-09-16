@@ -7,11 +7,11 @@ import System.Random
 -- assignment 1
 -- 20 minutes
 data Shape = NoTriangle 
-			| Equilateral
-			| Isosceles 
-			| Rectangular 
-			| Other 
-			deriving (Eq,Show)
+            | Equilateral
+            | Isosceles 
+            | Rectangular 
+            | Other 
+            deriving (Eq,Show)
 
 
 isRectangular :: Integer -> Integer -> Integer -> Bool
@@ -22,18 +22,18 @@ isRectangular x y z | x^2 + y^2 == z^2 = True
 
 triangle :: Integer -> Integer -> Integer -> Shape
 triangle a b c | a <= 0 || b <= 0 || c <= 0 = NoTriangle
-			   | (a == b) && (b == c) = Equilateral
-			   | (a == b || b == c || a == c) = Isosceles
-			   | isRectangular a b c = Rectangular
-			   | a + b < c || b + c < a || c + a < b = NoTriangle
-			   | otherwise = Other
+               | (a == b) && (b == c) = Equilateral
+               | (a == b || b == c || a == c) = Isosceles
+               | isRectangular a b c = Rectangular
+               | a + b < c || b + c < a || c + a < b = NoTriangle
+               | otherwise = Other
 
--- simple tests		
--- triangle 10 9 10			Isosceles
--- triangle 10 10 10		Equilateral
--- triangle 5 4 3			Rectangle
--- triangle 5 4 18			NoTriangle
--- triangle 5 4 6 			Other
+-- simple tests     
+-- triangle 10 9 10         Isosceles
+-- triangle 10 10 10        Equilateral
+-- triangle 5 4 3           Rectangle
+-- triangle 5 4 18          NoTriangle
+-- triangle 5 4 6           Other
 
 -- generic test function
 triangleTest :: [(Integer, Integer, Integer)] -> Shape -> Bool
@@ -54,7 +54,7 @@ testEquilateral = [ (x,y,z) | x <- [1..10], y <- [1..10], z <- [1..10], (x == y)
 -- triangleTest testRectangles Rectangular
 -- triangleTest testIsosceles Isosceles
 -- triangleTest testEquilateral Equilateral
-			   
+               
 ---------------
 -- assignment 2
 -- 30 minutes
@@ -63,7 +63,7 @@ isPermutation [] [] = True
 isPermutation xs [] = False -- list of uneven length
 isPermutation [] ys = False -- list of uneven length
 isPermutation (x:xs) ys = elem x ys && isPermutation xs (delete x ys)
-	
+    
 -------------------
 -- helper functions
 infix 1 ==>
@@ -129,11 +129,11 @@ insert' x all@(y:ys) = (x:all):(map (y:) (insert' x ys))
 --Ex.5: isDerangement function (20 minutes)
 isDerangement :: Eq a => [a] -> [a] -> Bool
 isDerangement xs ys = if isPermutation xs ys
-					then and (zipWith (/=) xs ys)
-					else False
+                    then and (zipWith (/=) xs ys)
+                    else False
 
 
------------------------------------------					
+-----------------------------------------                   
 --Ex.6: derangement generation (10 minutes)
 deran :: Eq a => [a] -> [[a]]
 deran xs = filter (isDerangement xs) (perms xs)
@@ -162,13 +162,13 @@ invalidDeran = ([x | x <- [1..100]], [y | y <- 1:reverse [2..100]])
 --execTest validDeran leads to True
 --exexTest invalidDeran leads to True
 
-	
+    
 ----------------------
 --Ex.8 Bonus1 (2 hours)
 arbDeran :: (Show a, Eq a) => [a] -> IO ()
 arbDeran xs = do
-	rnd <- getRndIndex (deran xs)
-	print $ getRndDeran xs rnd
+    rnd <- getRndIndex (deran xs)
+    print $ getRndDeran xs rnd
 
 -- get random index from list of derangements
 getRndIndex :: Eq a => [a] -> IO Int
