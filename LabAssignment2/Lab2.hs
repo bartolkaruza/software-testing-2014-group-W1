@@ -104,10 +104,7 @@ invalidDeran = ([x | x <- [1..100]], [y | y <- 1:reverse [2..100]])
 
 --Ex.7 continued: testable properties for isDerangements
 deranProp1 :: Eq a => [a] -> [a] -> Bool
-deranProp1 xs ys = (isDerangement xs ys) == ((length xs) == (length ys))
-
-deranProp2 :: Eq a => [a] -> [a] -> Bool
-deranProp2 xs ys = (isDerangement xs ys) == (listsNonEqual xs ys)
+deranProp1 xs ys = (isDerangement xs ys) == (listsNonEqual xs ys)
 
 listsNonEqual :: Eq a => [a] -> [a] -> Bool
 listsNonEqual [] [] = True
