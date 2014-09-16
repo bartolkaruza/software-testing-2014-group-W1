@@ -30,6 +30,11 @@ isPermutation all@(x:xs) ys = if ((length all) /= (length ys)) then False
 -- we can check that if a is a permutation of b then b is a permutation of a
 -- we can check that if a is a permutation of b and b is a permutation of c then a is a permutation of c
 
+reflectivePermutation :: [a] -> Bool
+reflectivePermutation xs = isPermutation xs xs
+
+commutativePermutation :: [a] -> [a] -> [a] -> Bool
+commutativePermutation xs ys zs = isPermutation xs ys && isPermutation ys zs => isPermutation xs zs
 
 
 
