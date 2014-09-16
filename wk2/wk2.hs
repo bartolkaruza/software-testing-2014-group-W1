@@ -49,13 +49,30 @@ module Lab2 where
     isPermutation _ [] = False -- lists of uneven length
     isPermutation (x:xs) ys = elem x ys && isPermutation xs (delete x ys)
 
-    -- ex. 3
+    -- ex. 3 (time: 1/3 hour)
 
-    reverseIsPermutation = isPermutation [x | x <- [1..100]] [x | x <- reverse [1..100] ]
-    -- needs more testable properties
+    reverseIsPermutation = isPermutation [x | x <- [1..100]] [x | x <- reverse [1..100] ] -- is reversable
+    differentLengthIsPermutation = isPermutation [x | x <- [1..100]] [x | x <- reverse [1..99] ] -- has same length
 
-    -- ex. 4
+    -- ex. 4 (time: 1/2 hour)
 
     perms :: Eq a => [a] -> [[a]]
     perms [] = [[]]
     perms xs = [(x:y) | x <- xs, y <- perms (delete x xs)]
+
+
+    -- ex. 5 (time: 1/3 hour)
+
+    isDerangement :: Eq a => [a] -> [a] -> Bool
+    isDerangement a b = if isPermutation a b
+                            then and (zipWith (/=) a b)
+                            else False
+
+    -- ex. 6 (time: 1/4 hour)
+    deran :: Eq a => [a] -> [b]
+    deran a = filter (isDerangement a) (perms a)
+
+    -- ex. 7 (time 1/2 hour)
+    reverseDeran = isDerangement [x | x <- [1..100]] [x | x <- reverse [1..100] ] -- is reversable
+
+
