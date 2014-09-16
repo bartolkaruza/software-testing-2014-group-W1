@@ -14,8 +14,9 @@ data Shape = NoTriangle
 
 
 triangle :: Int -> Int -> Int -> Shape
-triangle a b c | (a == b || b == c || a == c) = Isosceles
+triangle a b c | a <= 0 || b <= 0 || c <= 0 = NoTriangle
 			   | (a == b) && (b == c) = Equilateral
+			   | (a == b || b == c || a == c) = Isosceles
 			   | a^2 + b^2 == c^2 = Rectangular
 			   | a + b >= c || b + c >= a || a + c >= b = Other
 			   | otherwise = NoTriangle
