@@ -5,7 +5,8 @@ import System.Random
 
 data Shape = NoTriangle | Equilateral | Isosceles | Rectangular | Other deriving (Eq, Show)
 
---Ex.1: 2 hours
+---------------------------
+--Ex.1: Triangles (2 hours)
 triangle :: Integer -> Integer -> Integer -> Shape
 triangle a b c | a == b && a == c = Equilateral
 			   | a == c || a == b || b == c = Isosceles
@@ -13,7 +14,7 @@ triangle a b c | a == b && a == c = Equilateral
 			   | a + b < c || a + c < b || b + c < a = NoTriangle
 			   | otherwise = Other
 		
--- Simple tests		
+-- simple tests		
 -- triangle 10 9 10			Isosceles
 -- triangle 10 10 10		Equilateral
 -- triangle 5 4 3			Rectangle
@@ -24,6 +25,7 @@ triangle a b c | a == b && a == c = Equilateral
 triangleTest :: [(Integer, Integer, Integer)] -> Shape -> Bool
 triangleTest [] s = True
 triangleTest (x:xs) s = (triangle (eF x) (eS x) (eL x) == s) && triangleTest xs s
+
 --extract element from triple
 eF :: (a, b, c) -> a
 eF (a,_,_) = a
@@ -36,6 +38,7 @@ eL (_,_,c) = c
 genRectTriangles = [ (a,b,c) | c <- [1..100], b <- [1..c], a <- [1..b], a^2 + b^2 == c^2]  
 
 
+-----------------------------------------
 --Ex.2: isPermutation function (0.5 hours)
 isPermutation :: Eq a => [a] -> [a] -> Bool
 isPermutation [] [] = True
@@ -45,6 +48,7 @@ isPermutation (x:xs) ys =
 		else False
 		
 		
+---------------------------------------
 --Ex.3 Tests for isPermutation  (1 hour)
 testPerm :: ([Int], [Int]) -> Bool
 testPerm xs = isPermutation (fst xs) (snd xs)
@@ -61,6 +65,7 @@ invalidPerm' = ([x | x <- [1..100]], [y | y <- [2..101]])
 -- if the input contains no duplicates, this results in a stronger precondition for the test (stronger reqs on input), so the set of tests will be smaller
 
 
+---------------------------------------
 --Ex.4: Permutation generation (2 hours)
 perms :: Eq a => [a] -> [[a]]
 perms [] = [[]]
@@ -80,43 +85,62 @@ fact 1 = 1
 fact n = n * fact(n-1)
 
 
+--------------------------------------
 --Ex.5: isDerangement function (1 hour)
 isDerangement :: Eq a => [a] -> [a] -> Bool
 isDerangement xs ys = if isPermutation xs ys
 					then and (zipWith (/=) xs ys)
 					else False
 
-					
+
+-----------------------------------------					
 --Ex.6: derangement generation (0.5 hours)
 deran :: Eq a => [a] -> [[a]]
 deran xs = filter (isDerangement xs) (perms xs)
 
 
+---------------------------------------
 --Ex.7: tests for isDerangement (1 hour)
-testDeran :: ([Int], [Int]) -> Bool
-testDeran xs = isDerangement (fst xs) (snd xs)
---the reverse is always a derangement
-validDeran :: ([Int], [Int])
-validDeran = ([x | x <- [1..100]], [y | y <- reverse [1..100]])
---the reverse is always a derangement, but now the first element is not reversed
-invalidDeran :: ([Int], [Int])
-invalidDeran = ([x | x <- [1..100]], [y | y <- 1:reverse [2..100]])
-
---Ex.7 continued: testable properties for isDerangements
-deranProp1 :: Eq a => [a] -> [a] -> Bool
-deranProp1 xs ys = (isDerangement xs ys) == (listsNonEqual xs ys)
+--Property1 - elements in both lists should be unequal
+--Should it returns false, isDerangement is wrong
+deranTest1 :: Eq a => [a] -> [a] -> Bool
+deranTest1 xs ys = (isDerangement xs ys) == (listsNonEqual xs ys)
 
 listsNonEqual :: Eq a => [a] -> [a] -> Bool
 listsNonEqual [] [] = True
 listsNonEqual (x:xs) (y:ys) = (x /= y) && (listsNonEqual xs ys)
 
+--test execution function
+execTest :: ([Int], [Int]) -> Bool
+execTest xs = deranTest1 (fst xs) (snd xs)
+
+--test cases
+validDeran :: ([Int], [Int])
+validDeran = ([x | x <- [1..100]], [y | y <- reverse [1..100]])
+invalidDeran :: ([Int], [Int])
+invalidDeran = ([x | x <- [1..100]], [y | y <- 1:reverse [2..100]])
+
+--execTest validDeran leads to True
+--exexTest invalidDeran leads to False
+
+----------------------
 --Ex.8 Bonus1 (2 hours)
 arbDeran :: (Show a, Eq a) => [a] -> IO ()
 arbDeran xs = do
 	rnd <- getRndIndex (deran xs)
-	print $ deran xs!!rnd
+	print $ getRndDeran xs rnd
 
+-- get random index from list of derangements
 getRndIndex :: Eq a => [a] -> IO Int
 getRndIndex xs = getStdRandom (randomR (0, length xs - 1))
 
---Ex. 9 Bonus
+-- get derangement from list based on (random) index
+getRndDeran :: Eq a => [a] -> Int -> [a]
+getRndDeran xs index = (deran xs)!!index
+
+-- deranTest1 can show that the function works, if it returns True (and it does) for the random derangements
+--it however does not show that the derangement is picked randomly
+arbDeranTest :: (Show a, Eq a) => [a] -> IO ()
+arbDeranTest xs = do
+	rnd <- getRndIndex (deran xs)
+	print $ deranTest1 xs (getRndDeran xs rnd)
