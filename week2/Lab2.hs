@@ -27,14 +27,22 @@ isPermutation all@(x:xs) ys = if ((length all) /= (length ys)) then False
 	
 -- we can check that lists with unequal length are not permutations
 -- we can check that lists that are the same are permutations
+
+
+-- helper function
+(==>) :: Bool -> Bool -> Bool
+x ==> y = (not x) || y
+
+lengthEqual :: Eq a => [a] -> [a] -> Bool
+lengthEqual = (\x y -> (isPermutation x y) ==> ((length x) == (length y)))
+
 -- we can check that if a is a permutation of b then b is a permutation of a
+reflectivePermutation :: Eq a => [a] -> [a] -> Bool
+reflectivePermutation = (\x y -> (x == y) ==> isPermutation x x)
+
 -- we can check that if a is a permutation of b and b is a permutation of c then a is a permutation of c
-
-reflectivePermutation :: [a] -> Bool
-reflectivePermutation xs = isPermutation xs xs
-
-commutativePermutation :: [a] -> [a] -> [a] -> Bool
-commutativePermutation xs ys zs = isPermutation xs ys && isPermutation ys zs => isPermutation xs zs
+commutativePermutation :: Eq a => [a] -> [a] -> [a] -> Bool
+commutativePermutation = (\ p q r -> ((isPermutation p q) && (isPermutation q r)) ==> isPermutation p r)
 
 
 
