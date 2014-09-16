@@ -25,12 +25,20 @@ isPermutation [] ys = False
 isPermutation all@(x:xs) ys = if ((length all) /= (length ys)) then False
 							  else isPermutation xs (delete x ys)
 	
+-- we can check that lists with unequal length are not permutations
+-- we can check that lists that are the same are permutations
+-- we can check that if a is a permutation of b then b is a permutation of a
+-- we can check that if a is a permutation of b and b is a permutation of c then a is a permutation of c
 
--- we can check these outcomes by testing if the list of permutations is of length n! where n = length of input
+
+
+
 perms :: [a] -> [[a]]
 perms [] = error "empty list"
 perms [x] = [[x]]
 perms all@(x:xs) =  (concatMap (insert' x)) (perms xs)
+
+-- we can check these outcomes by testing if the list of permutations is of length n! where n = length of input
 
 insert' :: a -> [a] -> [[a]]
 insert' x [] = []
