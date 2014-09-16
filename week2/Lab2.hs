@@ -14,13 +14,38 @@ data Shape = NoTriangle
 			deriving (Eq,Show)
 
 
-triangle :: Int -> Int -> Int -> Shape
+triangle :: Integer -> Integer -> Integer -> Shape
 triangle a b c | a <= 0 || b <= 0 || c <= 0 = NoTriangle
 			   | (a == b) && (b == c) = Equilateral
 			   | (a == b || b == c || a == c) = Isosceles
 			   | a^2 + b^2 == c^2 = Rectangular
 			   | a + b >= c || b + c >= a || a + c >= b = Other
 			   | otherwise = NoTriangle
+
+-- simple tests		
+-- triangle 10 9 10			Isosceles
+-- triangle 10 10 10		Equilateral
+-- triangle 5 4 3			Rectangle
+-- triangle 5 4 18			NoTriangle
+-- triangle 5 4 6 			Other
+
+-- generic test function
+triangleTest :: [(Integer, Integer, Integer)] -> Shape -> Bool
+triangleTest [] s = True
+triangleTest (x:xs) s = (triangle (eF x) (eS x) (eL x) == s) && triangleTest xs s
+
+--extract element from triple
+eF :: (a, b, c) -> a
+eF (a,_,_) = a
+eS :: (a, b, c) -> b
+eS (_,b,_) = b
+eL :: (a, b, c) -> c
+eL (_,_,c) = c
+
+--generate rectangular triangles			
+genRectTriangles = [ (a,b,c) | c <- [1..100], b <- [1..c], a <- [1..b], a^2 + b^2 == c^2]  
+
+--executed using: triangleTest genRectTriangles Rectangular
 
 			   
 ---------------
