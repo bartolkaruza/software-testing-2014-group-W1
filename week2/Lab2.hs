@@ -53,7 +53,7 @@ module Lab2 where
 
 	perms :: Eq a => [a] -> [[a]]
 	perms [] = [[]]
-	perm xs = [x:ys | x <- xs, ys <- perms(delete x xs)]
+	perms xs = [x:ys | x <- xs, ys <- perms(delete x xs)]
 	-- The number of permutations is the factorial of the number of elements. 
 	-- The fact that the elements are unique, means you can use this to remove individual elements from the list, to permute the rest of the list
 
@@ -65,6 +65,16 @@ module Lab2 where
 	isDerangement [] _ = False
 	isDerangement (x:xs) (y:ys) = x /= y && (isDerangement xs ys)
 
+	-- Ex 6.
+	
+	deran :: Eq a => [a] -> [[a]]
+	deran xs = filter (\x -> isDerangement x xs) (perms xs)
+
+	-- Ex 7.
+
+	-- Ex. 9
+	-- !n = (n - 1) (!(n-1) + !(n-2)).
+	--f :: 
 	--perms :: Eq a => [a] -> [[a]]
 	--perms xs = foldr (\y -> ((x:delete x all)++((delete x all)++[x])):y) [[]] xs
 
