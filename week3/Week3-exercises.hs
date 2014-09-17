@@ -18,6 +18,9 @@ module Main where
 	entails :: Form -> Form -> Bool
 	entails _ _ = True
 
+	testEntails :: Bool
+	testEntails = (testEntails1) && (testEntails2) && (testEntails3)
+
 	-- {p} |# (p ∧ q)
 	testEntails1 :: Bool
 	testEntails1 = not (entails (parseSingle "1") (parseSingle "*(1 2)"))
