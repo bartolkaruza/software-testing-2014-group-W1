@@ -1,7 +1,10 @@
 module Main where
 	
 	import Week3
-
+	
+	type Clause = [Int]
+	type Clauses = [Clause]
+	
 	main :: IO ()
 	main = return()
 
@@ -60,10 +63,12 @@ module Main where
 	dist f1 (Cnj f2) = Cnj(map (\f -> (dist f1 f)) f2)
 	dist f1 f2 = Dsj[f1, f2]
 	
-	--precondition: input is in cnf
+	{-t
+	the output of convertCNF contains nested conjunctions/disjunctions --> we need to simplify the CNF result...
 	simplify :: Form -> Form
 	simplify 
-			
+	-}	
+	
 	--main conversion function
 	convertCNF :: Form -> Form
 	convertCNF f = cnf (nnf (arrowfree (f)))
@@ -80,15 +85,7 @@ module Main where
 	
 -------------------------------------------
 --Ex.3 CNF test
-
-	testCNFMain :: Int -> IO ()
-	testFormsOnCNF n = do 
-	fs <- getRandomFs n
-	test n testComb (map convertCNF fs)
-
-	testComb :: Form -> Bool
-	testComb f = (testAF f) && (testNNF f)
-
+	
 	testAF :: Form -> Bool
 	testAF (Prop x) = True
 	testAF (Neg f) = testAF f
@@ -107,3 +104,26 @@ module Main where
 	{- 
 	we should test each disjunction within a conjunction, however the output of convertCNF contains nested conjunctions/disjunctions --> we need to simplify the CNF result first...
 	-}
+	
+	
+	testAll :: Form -> Bool
+	testAll f = (testAF f) && (testNNF f)
+	
+	{-
+	testCNFMain :: Int -> IO ()
+	testCNFMain n = do 
+	fs <- getRandomFs n
+	test n testAll (map convertCNF fs)
+	-}
+	
+-----------------------------------------
+--Ex.4 Clause Form
+		
+	cnf2cls :: [Form] -> Clauses
+	cnf2cls [] = []
+	cnf2cls [Prop x] = [[x]]
+	cnf2cls [Neg (Prop x)] = [[-1*x]]
+	cnf2cls [(Dsj(f:fs))] = [(parseClause [f]) ++ parseClause fs]
+	cnf2cls [(Cnj(f:fs))] = (cnf2cls [f]) ++ (cnf2cls fs)
+	
+	testClause = Cnj[(Neg q), (Dsj[(Neg p), q])]
