@@ -34,5 +34,5 @@ cnf (Dsj (fs:gs)) = dist (cnf fs) (cnf gs)
 dist :: Form -> Form -> Form
 dist (Cnj fs) gs = Cnj (map ((flip dist) gs) fs)
 dist fs (Cnj gs) = Cnj (map (dist fs) gs)
-dist fs gs = Dsj (fs:[gs])
+dist fs gs = Dsj [fs, gs]
 -- we need to test that the 
