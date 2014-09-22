@@ -28,6 +28,7 @@ convert f = nnf  (arrowfree f)
 
 cnf :: Form -> Form 
 cnf (Prop x) = Prop x
+cnf Neg (Prop x) = Prop (Neg x)
 cnf (Cnj fs) = Cnj (map cnf fs)
 cnf (Dsj (fs:gs)) = dist (cnf fs) (cnf gs)
 
