@@ -42,7 +42,10 @@ module Main where
 ---------------------------------------
 --Ex.2 CNF  (2 hours)
 
-	--preconditions: input is in NNF
+	{-
+		preconditions: input is in NNF
+		postconditions: output is in (nested) CNF
+	-}
 	cnf :: Form -> Form
 	cnf (Prop x) = Prop x
 	cnf (Neg (Prop x)) = Neg (Prop x)
@@ -51,23 +54,17 @@ module Main where
 	cnf (Dsj fs) = distList (map cnf fs)
 
 	--apply distribution laws on list of forms
-	--precondition: every form is in cnf
+	--precondition: input is in cnf
 	distList :: [Form] -> Form
 	distList [] = error "should not come here"
 	distList [f] = f
 	distList (f:fs) = dist f (distList fs)
 	
-	--precondition: f1 and f2 are in cnf
+	--precondition: two inputs are in cnf
 	dist :: Form -> Form -> Form
 	dist (Cnj f1) f2 = Cnj(map (\f -> (dist f f2)) f1)
 	dist f1 (Cnj f2) = Cnj(map (\f -> (dist f1 f)) f2)
 	dist f1 f2 = Dsj[f1, f2]
-	
-	{-t
-	the output of convertCNF contains nested conjunctions/disjunctions --> we need to simplify the CNF result...
-	simplify :: Form -> Form
-	simplify 
-	-}	
 	
 	--main conversion function
 	convertCNF :: Form -> Form
@@ -100,16 +97,11 @@ module Main where
 	testNNF (Neg f) = False				--for every cnj/dsj within negation
 	testNNF (Cnj fs) = and (map testNNF fs)
 	testNNF (Dsj fs) = and (map testNNF fs)
-	
-	{- 
-	we should test each disjunction within a conjunction, however the output of convertCNF contains nested conjunctions/disjunctions --> we need to simplify the CNF result first...
-	-}
-	
-	
+		
 	testAll :: Form -> Bool
 	testAll f = (testAF f) && (testNNF f)
 	
-	{-
+	{- when uncommented, this statement results in parse errors in Ex.4?
 	testCNFMain :: Int -> IO ()
 	testCNFMain n = do 
 	fs <- getRandomFs n
