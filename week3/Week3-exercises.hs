@@ -110,8 +110,7 @@ module Main where
 	testDsj [(Neg (Prop x))] = True
 	testDsj [(Cnj f)] = False
 	testDsj [(Dsj (f:fs))] = testDsj [f] && testDsj fs
-	testDsj (f:fs) = testDsj [f] && testDsj fs
-	
+		
 	testAll :: Form -> Bool
 	testAll f = (testAF f) && (testNNF f)
 	
@@ -125,11 +124,14 @@ module Main where
 -----------------------------------------
 --Ex.4 Clause Form
 		
-	cnf2cls :: [Form] -> Clauses
-	cnf2cls [] = []
-	cnf2cls [Prop x] = [[x]]
-	cnf2cls [Neg (Prop x)] = [[-1*x]]
-	cnf2cls [(Dsj(f:fs))] = (cnf2cls [f]) ++ cnf2cls fs
-	cnf2cls [(Cnj(f:fs))] = (cnf2cls [f]) ++ (cnf2cls fs)
+	cnf2cls :: Form -> Clauses
+	cnf2cls f = cnf2cls' [f]
+			
+	cnf2cls' :: [Form] -> Clauses
+	cnf2cls' [] = []
+	cnf2cls' [Prop x] = [[x]]
+	cnf2cls' [Neg (Prop x)] = [[-1*x]]
+	cnf2cls' [(Dsj (f:fs))] = cnf2cls' [f] ++ cnf2cls' fs
+	cnf2cls' [(Cnj (f:fs))] = cnf2cls' [f] ++ cnf2cls' fs
 	
 	testClause = Cnj[(Neg q), (Dsj[(Neg p), q])]
