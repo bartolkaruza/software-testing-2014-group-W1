@@ -98,6 +98,20 @@ module Main where
 	testNNF (Cnj fs) = and (map testNNF fs)
 	testNNF (Dsj fs) = and (map testNNF fs)
 		
+	testCNF :: Form -> Bool
+	testCNF (Prop x) = True
+	testCNF (Neg (Prop x)) = True
+	--testCNF [(Dsj (f:fs))] = and [testDsj [f], testCNF fs]
+	testCNF (Dsj fs) = testDsj fs
+	testCNF (Cnj fs) = and (map testCNF fs)
+	
+	testDsj :: [Form] -> Bool
+	testDsj [(Prop x)] = True
+	testDsj [(Neg (Prop x))] = True
+	testDsj [(Cnj f)] = False
+	testDsj [(Dsj (f:fs))] = testDsj [f] && testDsj fs
+	testDsj (f:fs) = testDsj [f] && testDsj fs
+	
 	testAll :: Form -> Bool
 	testAll f = (testAF f) && (testNNF f)
 	
@@ -115,7 +129,7 @@ module Main where
 	cnf2cls [] = []
 	cnf2cls [Prop x] = [[x]]
 	cnf2cls [Neg (Prop x)] = [[-1*x]]
-	cnf2cls [(Dsj(f:fs))] = [(parseClause [f]) ++ parseClause fs]
+	cnf2cls [(Dsj(f:fs))] = (cnf2cls [f]) ++ cnf2cls fs
 	cnf2cls [(Cnj(f:fs))] = (cnf2cls [f]) ++ (cnf2cls fs)
 	
 	testClause = Cnj[(Neg q), (Dsj[(Neg p), q])]
