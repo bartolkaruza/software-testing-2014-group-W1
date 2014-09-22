@@ -28,12 +28,24 @@ convert f = nnf  (arrowfree f)
 
 cnf :: Form -> Form 
 cnf (Prop x) = Prop x
-cnf Neg (Prop x) = Prop (Neg x)
+cnf (Neg (Prop x)) = Neg (Prop x)
 cnf (Cnj fs) = Cnj (map cnf fs)
-cnf (Dsj (fs:gs)) = dist (cnf fs) (cnf gs)
+cnf (Dsj (x:fs)) = foldl dist x fs
 
 dist :: Form -> Form -> Form
 dist (Cnj fs) gs = Cnj (map ((flip dist) gs) fs)
 dist fs (Cnj gs) = Cnj (map (dist fs) gs)
 dist fs gs = Dsj [fs, gs]
 -- we need to test that the 
+
+
+-- clauses
+type Clause = [Int]
+type Clauses = [Clause]
+
+cnf2cls :: Form -> Clauses
+cnf2cls (Prop x) = x
+cnf2cls (Neg (Prop x)) = (-x)
+cnf2cls (Cnj fs) = map cnf2cls fs
+cnf2cls (Dsj f:fs) = cnf2cls f : (cnf2cls fs)
+
