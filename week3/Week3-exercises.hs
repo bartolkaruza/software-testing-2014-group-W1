@@ -119,7 +119,7 @@ module Main where
 	{-
 		testCNF is tested using the following statement:
 		> testCNFMain 100
-		> results in 100 tests passed
+		> results in '100 tests passed'
 		
 		testCNFMain is defined below
 	-}
@@ -143,8 +143,10 @@ module Main where
 	-- [[-2],[-1, 2]]
 	testClause2 = Cnj[(Neg q), (Dsj[(Neg p), q, (Neg r)])]
 	-- [[-2],[-1, 2, -3]]
+	testClause3 = Cnj[(Neg q), (Dsj[(Neg p), q, (Neg r)]),(Dsj[r, (Neg r)])]
+	--[[-2],[-1,-2,-3],[-3,-3]]
 	
-	--To Be Continued..	
+	--Not complete, To Be Continued..	
 	clsTest' :: Form -> Clauses -> Bool
 	clsTest' (Cnj (f:fs)) (c:cs) = match f c
 	
