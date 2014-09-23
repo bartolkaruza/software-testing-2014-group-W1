@@ -43,9 +43,14 @@ dist fs gs = Dsj [fs, gs]
 type Clause = [Int]
 type Clauses = [Clause]
 
-cnf2cls :: Form -> Clauses
-cnf2cls (Prop x) = x
-cnf2cls (Neg (Prop x)) = (-x)
-cnf2cls (Cnj fs) = map cnf2cls fs
-cnf2cls (Dsj f:fs) = cnf2cls f : (cnf2cls fs)
+--cnf2cls :: Form -> Clauses
+--cnf2cls (Prop x) = [[x]]
+--cnf2cls (Neg (Prop x)) = cnf2cls (Prop (-x))
+--cnf2cls (Cnj fs) = concatMap cnf2cls fs
+--cnf2cls (Dsj (f:fs)) = concat [cnf2clse f]:(cnf2cls (Dsj fs))
+
+--cnf2clse :: Form -> Clause
+--cnf2clse (Prop x) = [x]
+--cnf2clse (Neg (Prop x)) = [-x]
+--cnf2clse (Dsj (f:fs)) = concat (cnf2clse f) : (cnf2clse (Dsj fs))
 
