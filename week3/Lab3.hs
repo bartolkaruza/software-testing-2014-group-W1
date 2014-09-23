@@ -39,7 +39,9 @@ dist fs gs = Dsj [fs, gs]
 
 
 testCnf :: Int -> (Form->Bool) -> IO()
-testCnf n f = test n f (map main (getRandomFs n))
+testCnf n f = do
+	fs <- getRandomFs n
+	test n f (map main fs)
 
 -- we need to test that there are no conjunctions in a disjunction
 cnfCnj :: Form -> Bool
@@ -47,11 +49,13 @@ cnfCnj (Prop x) = True
 cnfCnj (Impl f g) = False
 cnfCnj (Equiv f g) = False
 cnfCnj (Neg f) = cnfCnj f
-cnfCnj (Cnj (f:[])) = cnfCnj f
+cnfCnj (Cnj (f:g:[])) = (cnfCnj f) && (cnfCnj g)
 cnfCnj (Cnj (f:fs)) = (cnfCnj f) && cnfCnj (Cnj fs)
 cnfCnj (Dsj ((Cnj f):fs)) = False
-cnfCnj (Dsj (f:[])) = cnfCnj f
+cnfCnj (Dsj (f:(Cnj g):[])) = False
+cnfCnj (Dsj (f:g:[])) = (cnfCnj f) && (cnfCnj g)
 cnfCnj (Dsj (f:fs)) = (cnfCnj f) && cnfCnj (Dsj fs)
+cnfCnj f = error (show f)
 
 
 -- validity checker for CNF formula's (not needed for exercises)
