@@ -56,8 +56,9 @@ module Main where
 	cnf :: Form -> Form
 	cnf (Prop x) = Prop x
 	cnf (Neg (Prop x)) = (Neg (Prop x))
-	cnf (Cnj [x,y]) = Cnj [(cnf x),(cnf y)]
-	cnf (Dsj [x,y]) = dist (cnf x) (cnf y)
+	cnf (Cnj xs) = Cnj (map cnf xs)
+	cnf (Dsj []) = Dsj []
+	cnf (Dsj (x:xs)) = dist (cnf x) (cnf (Dsj xs))
 
 	dist :: Form -> Form -> Form
 	dist (Cnj [x,y]) z = Cnj [(dist x z),(dist y z)]
