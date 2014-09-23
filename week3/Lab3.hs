@@ -19,8 +19,8 @@ entails :: Form -> Form -> Bool
 entails f g = tautology (Impl f g)
 
 
-main :: String -> IO ()
-main s = print (showLst [  ( convert f) | f<- (parse  s)])
+main :: Form -> Form
+main f = convert f
 
 -- convert
 convert :: Form -> Form
@@ -36,8 +36,14 @@ dist :: Form -> Form -> Form
 dist (Cnj fs) gs = Cnj (map ((flip dist) gs) fs)
 dist fs (Cnj gs) = Cnj (map (dist fs) gs)
 dist fs gs = Dsj [fs, gs]
--- we need to test that the 
 
+-- we need to test that the clauses (disjunctions) contain p left and -p right
+
+testCls :: Form -> Bool
+testCls (Prop x) = True
+testCls (Neg (Prop x)) = True
+testCls (Cnj fs) = testCls fs
+testCls (Dsj [x,y]) = eval (Equiv (nnf x) y)
 
 -- clauses
 type Clause = [Int]
