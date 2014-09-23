@@ -50,7 +50,7 @@ module Main where
 	cnf (Prop x) = Prop x
 	cnf (Neg (Prop x)) = Neg (Prop x)
 	cnf (Cnj fs) = Cnj(map cnf fs)
-	cnf (Dsj []) = Dsj[] --distList cannot handle empty list
+	cnf (Dsj []) = Dsj[]
 	cnf (Dsj (f:fs)) = dist (cnf f) (cnf (Dsj fs))
 	
 	{-
