@@ -44,29 +44,36 @@ module Main where
 
 	{-
 		preconditions: input is in NNF
-		postconditions: output is in (nested) CNF
+		postconditions: output is in CNF
 	-}
 	cnf :: Form -> Form
 	cnf (Prop x) = Prop x
 	cnf (Neg (Prop x)) = Neg (Prop x)
 	cnf (Cnj fs) = Cnj(map cnf fs)
-	cnf (Dsj []) = Dsj[]				--distList cannot handle empty list
+	cnf (Dsj []) = Dsj[] --distList cannot handle empty list
 	cnf (Dsj fs) = distList (map cnf fs)
 
-	--apply distribution laws on list of forms
-	--precondition: input is in cnf
+	{-
+		apply distribution laws on list of forms
+		precondition: input is in cnf
+		postcondition: outputs are cnf with distribution laws applied on conjunctions
+	-}
 	distList :: [Form] -> Form
-	distList [] = error "should not come here"
 	distList [f] = f
 	distList (f:fs) = dist f (distList fs)
 	
-	--precondition: two inputs are in cnf
+	{-
+		precondition: two inputs are in cnf
+		postcondition: distribution laws applied on inputs
+	-}
 	dist :: Form -> Form -> Form
 	dist (Cnj f1) f2 = Cnj(map (\f -> (dist f f2)) f1)
 	dist f1 (Cnj f2) = Cnj(map (\f -> (dist f1 f)) f2)
 	dist f1 f2 = Dsj[f1, f2]
 	
-	--main conversion function
+	{-
+		main conversion function
+	-}
 	convertCNF :: Form -> Form
 	convertCNF f = cnf (nnf (arrowfree (f)))
 	
@@ -79,59 +86,71 @@ module Main where
 	test6 = Dsj[p, (Cnj[q,r])]
 	test7 = Impl (Cnj[(Neg(p)), (Neg q)]) p
 	
+	{-	Results of convertCNF on test1-test7
+		1. -1
+		2. *(-1 2)
+		3. +(1 2)
+		4. *(*(*(+(+(-1 2) 1) +(+(-1 2) -2)) *(+(+(-1 2) -2) +(+(-1 2) 1))) *(*(+(+(2 -1) 1) +(+(2 -1) -2))  *(+(+(2 -1) -2) +(+(2 -1) 1))))
+		5. *(+(1 3) +(2 3))
+		6. *(+(1 2) +(1 3))
+		7. +(+(1 2) 1)
+	-}
+	
 	
 -------------------------------------------
---Ex.3 CNF test
+--Ex.3 CNF test (3 hours)
 	
-	testAF :: Form -> Bool
-	testAF (Prop x) = True
-	testAF (Neg f) = testAF f
-	testAF (Cnj fs) = and (map testAF fs)
-	testAF (Dsj fs) = and (map testAF fs)
-	testAF (Impl f1 f2) = False
-	testAF (Equiv f1 f2) = False
-	
-	testNNF :: Form -> Bool
-	testNNF (Prop x) = True
-	testNNF (Neg (Prop x)) = True		--only negation that is allowed
-	testNNF (Neg f) = False				--for every cnj/dsj within negation
-	testNNF (Cnj fs) = and (map testNNF fs)
-	testNNF (Dsj fs) = and (map testNNF fs)
-		
 	testCNF :: Form -> Bool
 	testCNF (Prop x) = True
-	testCNF (Neg (Prop x)) = True
-	--testCNF [(Dsj (f:fs))] = and [testDsj [f], testCNF fs]
-	testCNF (Dsj fs) = testDsj fs
+	testCNF (Neg (Prop x)) = True		
+	testCNF (Neg f) = False	 				--NNF		
 	testCNF (Cnj fs) = and (map testCNF fs)
+	testCNF (Dsj fs) = testDsj fs && and (map testCNF fs) 
+	testCNF (Impl f1 f2) = False			--arrowfree
+	testCNF (Equiv f1 f2) = False			--arrowfree
 	
 	testDsj :: [Form] -> Bool
-	testDsj [(Prop x)] = True
-	testDsj [(Neg (Prop x))] = True
 	testDsj [(Cnj f)] = False
+	testDsj ((Cnj f):_) = False
 	testDsj [(Dsj (f:fs))] = testDsj [f] && testDsj fs
-		
-	testAll :: Form -> Bool
-	testAll f = (testAF f) && (testNNF f)
+	testDsj ((Dsj (f:fs)):gs) = testDsj [f] && testDsj fs && testDsj gs
+	testDsj _ = True --anything else then conjunction / disjunction is True
 	
-	{- when uncommented, this statement results in parse errors in Ex.4?
+	{-
+		testCNF is tested using the following statement:
+		> testCNFMain 100
+		> results in 100 tests passed
+		
+		testCNFMain is defined below
+	-}
+		
+-----------------------------------------
+--Ex.4 Clause Form (1 hour)
+		
+	cnf2cls :: Form -> Clauses
+	cnf2cls (Cnj fs) = (map clsDsj fs)
+	cnf2cls f = [[clsProp f]]
+	
+	clsDsj :: Form -> Clause
+	clsDsj (Dsj fs) = (map clsProp fs)
+	clsDsj f = [clsProp f]
+	
+	clsProp :: Form -> Int
+	clsProp (Prop x) = -x
+	clsProp (Neg (Prop x)) = -1*x
+	
+	testClause1 = Cnj[(Neg q), (Dsj[(Neg p), q])]
+	-- [[-2],[-1],[2]]
+	testClause2 = Cnj[(Neg q), (Dsj[(Neg p), q, (Neg r)])]
+	
+	--to implement
+	--clsTest :: Form -> Clauses -> Bool
+	
+	
+------------------------------------------
+--Main test method for CNF
+
 	testCNFMain :: Int -> IO ()
 	testCNFMain n = do 
 	fs <- getRandomFs n
-	test n testAll (map convertCNF fs)
-	-}
-	
------------------------------------------
---Ex.4 Clause Form
-		
-	cnf2cls :: Form -> Clauses
-	cnf2cls f = cnf2cls' [f]
-			
-	cnf2cls' :: [Form] -> Clauses
-	cnf2cls' [] = []
-	cnf2cls' [Prop x] = [[x]]
-	cnf2cls' [Neg (Prop x)] = [[-1*x]]
-	cnf2cls' [(Dsj (f:fs))] = cnf2cls' [f] ++ cnf2cls' fs
-	cnf2cls' [(Cnj (f:fs))] = cnf2cls' [f] ++ cnf2cls' fs
-	
-	testClause = Cnj[(Neg q), (Dsj[(Neg p), q])]
+	test n testCNF (map convertCNF fs)
