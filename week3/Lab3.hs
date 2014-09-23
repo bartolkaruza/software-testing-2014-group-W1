@@ -1,7 +1,7 @@
 module Lab3 where 
 
 import Week3
- 
+import Data.List
  -- time spent (1 minute)
 contradiction :: Form -> Bool
 contradiction f =  not (satisfiable f)
@@ -20,7 +20,7 @@ entails f g = tautology (Impl f g)
 
 
 main :: Form -> Form
-main f = convert f
+main f = cnf (convert f)
 
 -- convert
 convert :: Form -> Form
@@ -30,20 +30,40 @@ cnf :: Form -> Form
 cnf (Prop x) = Prop x
 cnf (Neg (Prop x)) = Neg (Prop x)
 cnf (Cnj fs) = Cnj (map cnf fs)
-cnf (Dsj (x:fs)) = foldl dist x fs
+cnf (Dsj (f:fs)) = foldl dist f fs
 
 dist :: Form -> Form -> Form
 dist (Cnj fs) gs = Cnj (map ((flip dist) gs) fs)
 dist fs (Cnj gs) = Cnj (map (dist fs) gs)
 dist fs gs = Dsj [fs, gs]
 
--- we need to test that the clauses (disjunctions) contain p left and -p right
 
-testCls :: Form -> Bool
-testCls (Prop x) = True
-testCls (Neg (Prop x)) = True
-testCls (Cnj fs) = testCls fs
-testCls (Dsj [x,y]) = eval (Equiv (nnf x) y)
+testCnf :: Int -> (Form->Bool) -> IO()
+testCnf n f = test n f (map main (getRandomFs n))
+
+-- we need to test that there are no conjunctions in a disjunction
+cnfCnj :: Form -> Bool
+cnfCnj (Prop x) = True
+cnfCnj (Impl f g) = False
+cnfCnj (Equiv f g) = False
+cnfCnj (Neg f) = cnfCnj f
+cnfCnj (Cnj (f:[])) = cnfCnj f
+cnfCnj (Cnj (f:fs)) = (cnfCnj f) && cnfCnj (Cnj fs)
+cnfCnj (Dsj ((Cnj f):fs)) = False
+cnfCnj (Dsj (f:[])) = cnfCnj f
+cnfCnj (Dsj (f:fs)) = (cnfCnj f) && cnfCnj (Dsj fs)
+
+
+-- validity checker for CNF formula's (not needed for exercises)
+cnfValid :: Form -> Bool
+cnfValid (Prop x) = True
+cnfValid (Neg (Prop x)) = True
+cnfValid (Cnj (f:fs)) = (cnfValid f) && cnfValid (Cnj fs)
+cnfValid (Dsj ((Prop x):fs)) = (and $ (map (==show (Neg (Prop x))) (map show fs))) && cnfValid (Dsj (delete (Neg (Prop x)) (delete (Prop x) fs)))
+cnfValid (Dsj (f:fs)) = (cnfValid f) && cnfValid (Dsj fs)
+cnfValid _ = False
+
+
 
 -- clauses
 type Clause = [Int]
