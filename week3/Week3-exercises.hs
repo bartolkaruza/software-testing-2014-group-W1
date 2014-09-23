@@ -143,9 +143,20 @@ module Main where
 	-- [[-2],[-1],[2]]
 	testClause2 = Cnj[(Neg q), (Dsj[(Neg p), q, (Neg r)])]
 	
-	--to implement
-	--clsTest :: Form -> Clauses -> Bool
+	clsTest :: Form -> Clauses -> Bool
+	clsTest (Cnj fs) cs = (length fs == length cs)
 	
+	clsTest' :: Form -> Clauses -> Bool
+	clsTest' (Cnj (f:fs)) (c:cs) = match f c
+	
+	match :: Form -> Clause -> Bool
+	match (Prop x) [c] = x == c
+	match (Neg (Prop x)) [c] = x == -1*c
+	match (Dsj (f:fs)) (c:cs) = match' f c && (map 
+	
+	match' :: Form -> Int -> Bool
+	match' (Prop x) c = x == c
+	match' (Neg (Prop x)) c = x == -1*c
 	
 ------------------------------------------
 --Main test method for CNF
