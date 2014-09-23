@@ -140,8 +140,9 @@ module Main where
 	clsProp (Neg (Prop x)) = -1*x
 	
 	testClause1 = Cnj[(Neg q), (Dsj[(Neg p), q])]
-	-- [[-2],[-1],[2]]
+	-- [[-2],[-1, 2]]
 	testClause2 = Cnj[(Neg q), (Dsj[(Neg p), q, (Neg r)])]
+	-- [[-2],[-1, 2, -3]]
 	
 	--To Be Continued..	
 	clsTest' :: Form -> Clauses -> Bool
