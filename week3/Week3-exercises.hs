@@ -51,16 +51,7 @@ module Main where
 	cnf (Neg (Prop x)) = Neg (Prop x)
 	cnf (Cnj fs) = Cnj(map cnf fs)
 	cnf (Dsj []) = Dsj[] --distList cannot handle empty list
-	cnf (Dsj fs) = distList (map cnf fs)
-
-	{-
-		apply distribution laws on list of forms
-		precondition: input is in cnf
-		postcondition: outputs are cnf with distribution laws applied on conjunctions
-	-}
-	distList :: [Form] -> Form
-	distList [f] = f
-	distList (f:fs) = dist f (distList fs)
+	cnf (Dsj (f:fs)) = dist (cnf f) (cnf (Dsj fs))
 	
 	{-
 		precondition: two inputs are in cnf
