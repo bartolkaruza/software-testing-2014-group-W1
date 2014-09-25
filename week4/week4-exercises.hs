@@ -26,23 +26,31 @@ qcSetContents = verboseCheck ((\s -> list2set s == list2set s) :: [Int] -> Bool)
 	Ex.4 Set operations
 -}
 
-test1 = Set [1,2,3,4,5]
-test2 = Set [1,0,6,7,4]
+test1 = Set [1,2,3,4,5,6,7,8]
+test2 = Set [6,7,8,9,10,11]
 
+--intersection of set1 and set2: all elements in set1 that are contained in set2
 intersectSet :: (Ord a) => Set a -> Set a -> Set a
 intersectSet (Set []) (Set []) = Set []
 intersectSet set1 (Set []) = Set []
-intersectSet (Set []) set1 = Set []
-intersectSet set1 set2 = unionSet (getSubset set1 set2) (getSubset set2 set1)
+intersectSet (Set []) set2 = Set []
+intersectSet (Set (x:xs)) set2 = if inSet x set2 
+							then insertSet x (intersectSet (Set xs) set2) 
+							else intersectSet (Set xs) set2
+						
+--difference of set1 and set2: set1 - (set1 intersect set2)						
+diffSet :: (Eq a, Ord a) => Set a -> Set a -> Set a
+diffSet (Set []) (Set []) = Set []
+diffSet set1 (Set []) = set1
+diffSet (Set []) set2 = set2
+diffSet set1 set2 = filterSet (intersectSet set1 set2) set1
 
-getSubset :: (Ord a) => Set a -> Set a -> Set a
-getSubset (Set []) set2 = Set []
-getSubset (Set (x:xs)) set2 = if inSet x set2 
-							then insertSet x (getSubset (Set xs) set2) 
-							else getSubset (Set xs) set2
+--remove elements contained in set1 from set2
+filterSet :: (Eq a, Ord a) => Set a -> Set a -> Set a
+filterSet (Set []) set2 = set2
+filterSet (Set (x:xs)) set2 = filterSet (Set xs) ( deleteSet x set2)
 							
-							
-qcSetIntersect = ((\s t -> isIntersection (list2set s) (list2set t)) :: [Int] -> [Int] -> Bool)
+qcIntersectSet = ((\s t -> isIntersection (list2set s) (list2set t)) :: [Int] -> [Int] -> Bool)
 					
 isIntersection :: (Ord a) => Set a -> Set a -> Bool
 isIntersection set1 set2 = (subSet s3 set1) && (subSet s3 set2)
