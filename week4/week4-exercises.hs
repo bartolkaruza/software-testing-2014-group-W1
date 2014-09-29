@@ -70,7 +70,7 @@ module Main where
 
     trClos :: Ord a => Rel a -> Rel a
     trClos [] = []
-    trClos (x:xs) = nub (x : trClos (trClos ([x]@@xs) ++ xs))
+    trClos (x:xs) = x : trClos (trClos ([x]@@xs) ++ xs)
 
     trClosSingle :: Ord a => Rel a -> Rel a -> Rel a
     trClosSingle x [] = []
