@@ -7,11 +7,7 @@ module Main where
     import System.Random
     import Data.List
 
-    main :: IO()
-    main = 
-        do 
-        x <- getRandomSet 1000
-        print x
+    
 
 --------------------------------
 -- Ex.1 (Time spent: ) TODO
@@ -71,4 +67,18 @@ module Main where
     trClos :: Ord a => Rel a -> Rel a
     trClos [] = []
     trClos (x:xs) = x : trClos (trClos ([x]@@xs) ++ xs)
+
+-- Ex.6
+
+    main :: IO()
+    main = hspec $ do
+        describe "trClos" $ do
+            it "returns the transitive closure of a list" $ do
+                trClos [(1,2),(2,3),(3,4)] `shouldBe` [(1,2),(1,3),(1,4),(2,3),(2,4),(3,4)]
+
+            it "returns an empty list when used with an empty list" $ do
+                trClos [(1,2),(2,3),(3,4),(4,3)] `shouldBe` []
+
+
+
 
