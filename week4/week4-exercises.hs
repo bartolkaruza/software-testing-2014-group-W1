@@ -72,7 +72,3 @@ module Main where
     trClos [] = []
     trClos (x:xs) = x : trClos (trClos ([x]@@xs) ++ xs)
 
-    trClosSingle :: Ord a => Rel a -> Rel a -> Rel a
-    trClosSingle x [] = []
-    trClosSingle x (y:ys) = x ++ trClosSingle x (x @@ [y])
-
