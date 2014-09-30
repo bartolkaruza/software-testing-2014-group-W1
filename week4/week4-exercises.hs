@@ -139,11 +139,11 @@ trClos r = transClosure r r
 -- uses the property that the union of all the (ra @@ sa) should give a transitive closure, and that the transitive closure has been reached
 -- when no other element is added to the relation
 transClosure :: Ord a => Rel a -> Rel a -> Rel a
-transClosure [] [] = []
-transClosure ra sa | (length ra) /= (length sa) =  error "list of unequal length"
-                   | otherwise =  if diffSet (Set t) (unionSet (Set sa) (Set ra) ) == emptySet 
+transClosure _ [] = []
+transClosure [] _ = []
+transClosure ra sa = if diffSet (Set t) (unionSet (Set sa) (Set ra) ) == emptySet 
                                   then t
-                                  else transClosure t t
+                                  else transClosure ra t
                                      where r' = ra @@ sa 
                                            Set t = (unionSet (Set ra) (Set r'))
 
