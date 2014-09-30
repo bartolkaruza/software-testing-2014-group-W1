@@ -115,11 +115,20 @@ isDifferent (Set (x:xs)) set2 = (not (inSet x set2)) && ( isDifferent (Set xs) s
 
 {-
  unionSet is already defined in the SetOrd, so we skipped the implementation. We have implemented the following QuickCheck test
+
  when checking manually though, it failed at [(0,1),(0,0)] so we have implemented a new version
- 
+
+ SetOrd.unionSet appears not to work on the following:
+ >> let a = [(0,1), (0,0)]
+ >> unionSet (Set a) (Set a)
+ << {(0,0),(0,1),(0,0)}
+
 -}
 
-qcUnionSet = (\s t -> (and [((inSet x (Set s)) && (inSet x (Set t)) && (inSet x (unionSet (Set s) (Set t)))) || not ((inSet x (Set s)) && (inSet x (Set t)))  | x <- s, y <- t ]) ) :: [Int] -> [Int] -> Bool
+unionSet' :: (Ord a) => Set a -> Set a -> Set a 
+unionSet' (Set a) (Set b) = list2set $ union a b
+
+qcUnionSet = (\s t -> (and [((inSet x (Set s)) && (inSet x (Set t)) && (inSet x (unionSet' (Set s) (Set t)))) || not ((inSet x (Set s)) && (inSet x (Set t)))  | x <- s, y <- t ]) ) :: [Int] -> [Int] -> Bool
 
 qcDuplicates = (\s t -> checkDuplicate (unionSet (list2set s) (list2set t))) :: [Int] -> [Int] -> Bool
 
@@ -158,6 +167,7 @@ transClosure ra sa = if diffSet (Set t) (setUnion (Set sa) (Set ra) ) == emptySe
                                   else transClosure ra t
                                      where r' = ra @@ sa 
                                            Set t = (setUnion (Set ra) (Set r'))
+
 
 toRel :: Set (a, a) -> [(a, a)]
 toRel (Set xs) = xs
