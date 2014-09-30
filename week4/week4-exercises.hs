@@ -108,13 +108,13 @@ infixr 5 @@
 r @@ s = nub [(x,z) | (x,y) <- r, (w,z) <- s, y == w]
 
 
-trClos :: Ord a => Rel a -> Rel a
-trClos r = trClos' $ srtRel r
+--trClos :: Ord a => Rel a -> Rel a
+--trClos r = trClos' $ srtRel r
 
 --clean implementation (Bartol), but it seems that quickCheck can generate relations that do not bottom out in the @@ function.
-trClos' :: Ord a => Rel a -> Rel a
-trClos' [] = []
-trClos' (x:xs) = x : trClos (trClos ([x]@@xs) ++ xs)
+--trClos' :: Ord a => Rel a -> Rel a
+--trClos' [] = []
+--trClos' (x:xs) = x : trClos (trClos ([x]@@xs) ++ xs)
 
 {-
 --this version works on any input (Axel), however it uses nub after processing to deal with initial duplicates.
