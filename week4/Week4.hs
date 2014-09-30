@@ -6,12 +6,6 @@ import Test.QuickCheck
 import Data.List
 import Control.Exception (evaluate)
 import Test.Hspec
---gen :: [Int]
---gen = do 
---      g <- newStdGen
---      n <- random g
---      print . tenPseudorandomNumbers n	  
-
 
 {-
     2. Time: about 1,5 hour and some experimenting 
@@ -93,7 +87,7 @@ transClosure ra sa = if setDifference (setUnion (Set ra) (Set (ra @@ sa) )) (set
 -}
 
 hspecDef :: IO ()
-trClosSpec = hspec mySpec
+hspecDef = hspec mySpec
 
 mySpec = describe "trClos" $ do
     it "returns the transitive closure of a relation" $ do
