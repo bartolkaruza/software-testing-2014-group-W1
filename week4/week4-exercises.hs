@@ -187,3 +187,9 @@ getRandomR g = zip (getRndList 100 20 g) (getRndList 100 20 g)
 
 --quickCheck function (generate two Int lists, zip them to get a Int relation [(Int, Int)]
 qcTrClos = ((\x y -> testClosureTr (zip x y)) :: [Int] -> [Int] -> Bool)
+
+---- BONUS (5 min)
+{- if we define the value that we put in as v then we can see that the formula is (x+v/x)/2. When x=sqrt(v) then v/x=x, so in that case 
+   the output is (x+x)/2=x, which makes the if statement get into the if clause instead of the else clause and the program terminates. 
+   As written earlier, in this case x=sqrt(v).
+  -}
