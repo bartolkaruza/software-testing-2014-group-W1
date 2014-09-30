@@ -144,13 +144,16 @@ test3 = [(1,2),(2,3),(3,4)]
 
 main :: IO ()
 main = hspec $ do
-	describe "Lab4.trClos" $ do
-	  it "returns a list with the given relation when given a list with one relation"$ do
-		trClos [(0,1)] `shouldBe` [(0,1)]
+    describe "Lab4.trClos" $ do
+      it "returns a list with the given relation when given a list with one relation" $
+        trClos [(0,1)] `shouldBe` [(0,1)]
 		
-	  it "returns the transitive closure on the given list of binary relations" $ do
-		trClos [(1,2),(2,3),(3,4)] `shouldBe` [(1,2),(1,3),(1,4),(2,3),(2,4),(3,4)]
-		
+      it "returns a relation that is transitive" $ do
+         let r = trClos [(1,2),(2,3),(3,4)]
+         isTransitive (trClos r)
+		 
+      it "returns the transitive closure on the given list of binary relations" $
+        trClos [(1,2),(2,3),(3,4)] `shouldBe` [(1,2),(1,3),(1,4),(2,3),(2,4),(3,4)]
 	  --it "returns a empty list when given an empty list"
 	  
 {-
