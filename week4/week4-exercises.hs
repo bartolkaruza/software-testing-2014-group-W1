@@ -108,6 +108,18 @@ infixr 5 @@
 r @@ s = nub [(x,z) | (x,y) <- r, (w,z) <- s, y == w]
 
 
+
+trClos :: Ord a => Rel a -> Rel a
+trClos r = transClosure r r 
+
+transClosure :: Ord a => Rel a -> Rel a -> Rel a
+transClosure ra@(r:rs) sa@(s:ss) = if diffSet (Set (ra @@ sa)) (Set ra) == emptySet && 
+                                      diffSet (Set (ra @@ sa)) (Set sa) == emptySet then toRel (unionSet (Set ra) (Set sa))
+                                   else transClosure ra (ra @@ sa) 
+
+toRel :: Set (a, a) -> [(a, a)]
+toRel (Set xs) = xs
+
 --trClos :: Ord a => Rel a -> Rel a
 --trClos r = trClos' $ srtRel r
 
