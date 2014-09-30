@@ -56,9 +56,12 @@ runallTestEx4 = do
          quickCheck qcIntersectSet
          print "run test difference"
          quickCheck qcDiffSet 
-         print "run test union"
+         print "run test union already defined"
          quickCheck qcUnionSet
-
+         quickCheck qcDuplicates
+         print "run test union us"
+         quickCheck qcUnionSetUs
+         quickCheck qcDuplicatesUs
 {-
 	===================================================
 	intersection of set1 and set2: all elements in set1 that are contained in set2
@@ -125,12 +128,14 @@ isDifferent (Set (x:xs)) set2 = (not (inSet x set2)) && ( isDifferent (Set xs) s
 
 -}
 
-unionSet' :: (Ord a) => Set a -> Set a -> Set a 
-unionSet' (Set a) (Set b) = list2set $ union a b
 
-qcUnionSet = (\s t -> (and [((inSet x (Set s)) && (inSet x (Set t)) && (inSet x (unionSet' (Set s) (Set t)))) || not ((inSet x (Set s)) && (inSet x (Set t)))  | x <- s, y <- t ]) ) :: [Int] -> [Int] -> Bool
+qcUnionSet = (\s t -> (and [((inSet x (Set s)) && (inSet x (Set t)) && (inSet x (unionSet (Set s) (Set t)))) || not ((inSet x (Set s)) && (inSet x (Set t)))  | x <- s, y <- t ]) ) :: [Int] -> [Int] -> Bool
 
 qcDuplicates = (\s t -> checkDuplicate (unionSet (list2set s) (list2set t))) :: [Int] -> [Int] -> Bool
+
+qcUnionSetUs = (\s t -> (and [((inSet x (Set s)) && (inSet x (Set t)) && (inSet x (setUnion (Set s) (Set t)))) || not ((inSet x (Set s)) && (inSet x (Set t)))  | x <- s, y <- t ]) ) :: [Int] -> [Int] -> Bool
+
+qcDuplicatesUs = (\s t -> checkDuplicate (setUnion (list2set s) (list2set t))) :: [Int] -> [Int] -> Bool
 
 checkDuplicate (Set []) = True
 checkDuplicate (Set (x:xs)) = not (elem x xs) && checkDuplicate (Set xs)
@@ -162,6 +167,7 @@ trClos r = transClosure r r
 transClosure :: Ord a => Rel a -> Rel a -> Rel a
 transClosure _ [] = []
 transClosure [] _ = []
+
 transClosure ra sa = if diffSet (Set t) (setUnion (Set sa) (Set ra) ) == emptySet 
                                   then t
                                   else transClosure ra t
