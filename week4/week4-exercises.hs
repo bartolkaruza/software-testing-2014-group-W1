@@ -115,6 +115,14 @@ isDifferent (Set (x:xs)) set2 = (not (inSet x set2)) && ( isDifferent (Set xs) s
 
 {-
  unionSet is already defined in the SetOrd, so we skipped the implementation. We have implemented the following QuickCheck test
+
+ SetOrd.unionSet appears not to work on the following:
+ >> let a = [(0,1), (0,0)]
+ >> unionSet (Set a) (Set a)
+ << {(0,0),(0,1),(0,0)}
+
+ thus unionSet' with the builtin List.union
+
 -}
 
 unionSet' :: (Ord a) => Set a -> Set a -> Set a 
