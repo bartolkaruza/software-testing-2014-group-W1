@@ -62,9 +62,32 @@ trClos :: Ord a => Rel a -> Rel a
 trClos [] = []
 trClos (a:xs) = [a] ++ trClos ( trClos ([a] @@ xs) ++ xs)
 
--- 6 0.5hr
+-- 6 0.5 hr
 
 trClosSpec = hspec $ do
     describe "transitiveClosure" $ do
         it "returns transitive closure tuples given a list of tuples" $ 
             trClos [(1,2),(2,3)] `shouldBe` [(1,2),(1,3),(2,3)]
+
+
+-- 7 1.0 hr
+
+putRelation :: [Int] -> [(Int, Int)]
+putRelation x = putRelation' [] x
+
+putRelation' :: [(Int, Int)] -> [Int] -> [(Int, Int)]
+putRelation' s [] = s
+putRelation' s (x:y:ys) = putRelation' (nub (s ++ [(x,y)] )) ys
+putRelation' s _ = s -- ignore single element 
+
+relSubset :: Ord a => Rel a -> Rel a -> Bool
+relSubset a b = and (map (\x -> elem x b) a)
+
+trClosTest :: IO ()
+trClosTest = do d <- newStdGen
+                let gen = putRelation $ take 20 (randomRs (0, 10) d :: [Int]) in
+                    
+                    -- list of relations is subset of transitive closure of list of relations
+                    print $ relSubset gen (trClos gen) 
+
+trClosTestQC = quickCheck ((\x -> relSubset (putRelation x) (trClos (putRelation x)) ) :: [Int] -> Bool)
