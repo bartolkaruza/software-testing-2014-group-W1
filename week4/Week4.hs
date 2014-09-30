@@ -106,12 +106,24 @@ mySpec = describe "trClos" $ do
     it "returns a relation that is transitive" $ do
        let r = trClos [(1,2),(2,3),(3,4)]
        all (==True) [(elem (x,z) r) | (x,y) <- r,  (w,z) <- r, y == w]
-		   --all (\x y z -> ((elem (x,y) (trClos r)) && (elem (y,z) (trClos r)) && (elem (x,z) (trClos r))) || ( not (elem (x,y) (trClos r)) && not (elem (y,z) (trClos r))  )) r
-  
-    --  property $ (\x y z xs ->  elem (x,z) ((trClos ((x,y):(y,z):(xs ::[(a,a)])))))
-	--        let r = [(1,2),(1,3),(1,4),(2,3),(2,4),(3,4)]
+
+mySpecQC = describe "trClos" $ do
+    it "returns the transitive closure of a relation" $ do
+       trClos [(1,2),(2,3),(3,4)] `shouldBe` [(1,2),(1,3),(1,4),(2,3),(2,4),(3,4)]
+	 
+    it "contains at least all the elements of input r" $ 
+       property $ checkBaseRelation
+           
+	 
+    it "returns a relation that is transitive" $ do
+       let r = trClos [(1,2),(2,3),(3,4)]
+       all (==True) [(elem (x,z) r) | (x,y) <- r,  (w,z) <- r, y == w]	   
+	   
+checkBaseRelation r = all (\x -> (elem x (trClos r))) r
+   where types = r :: [(Int, Int)]
 	
-	
+checkTransitivity r = all (==True) [(elem (x,z) r) | (x,y) <- r,  (w,z) <- r, y == w]
+   where types = r :: [(Int, Int)]
 
 	
 toRel :: Set (a, a) -> Rel a
