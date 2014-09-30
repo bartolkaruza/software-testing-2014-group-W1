@@ -47,8 +47,7 @@ test2 = Set [6,7,8,9,10,11]
 	intersection of set1 and set2: all elements in set1 that are contained in set2
 -}
 intersectSet :: (Ord a, Eq a) => Set a -> Set a -> Set a
-intersectSet (Set []) (Set []) = emptySet
-intersectSet (Set []) set2 = emptySet
+intersectSet (Set []) _ = emptySet
 intersectSet (Set (x:xs)) set2 = if inSet x set2 
 							then insertSet x (intersectSet (Set xs) set2) 
 							else intersectSet (Set xs) set2
@@ -65,9 +64,7 @@ isIntersection set1 set2 = (subSet s3 set1) &&
 							where s3 = intersectSet set1 set2
 							
 matchElems :: (Ord a, Eq a) => Set a -> Set a -> Set a -> Bool
-matchElems (Set []) (Set []) (Set []) = True
-matchElems (Set []) set2 (Set []) = True
-matchElems set1 (Set []) (Set []) = True
+matchElems _ _ (Set []) = True
 matchElems (Set [x]) set2 iSet = if (inSet x set2) 
 									then (inSet x iSet)
 									else True
@@ -81,9 +78,8 @@ matchElems (Set (x:xs)) set2 iSet = if (inSet x set2)
 	difference of set1 and set2: set1 - (set1 intersect set2)						
 -}
 diffSet :: (Ord a, Eq a) => Set a -> Set a -> Set a
-diffSet (Set []) (Set []) = emptySet
+diffSet (Set []) _ = emptySet
 diffSet set1 (Set []) = set1
-diffSet (Set []) set2 = emptySet
 diffSet set1 set2 = removeSet (intersectSet set1 set2) set1
 
 --remove elements contained in set1 from set2
@@ -111,6 +107,17 @@ infixr 5 @@
 (@@) :: Eq a => Rel a -> Rel a -> Rel a
 r @@ s = nub [(x,z) | (x,y) <- r, (w,z) <- s, y == w]
 
+
+trClos :: Ord a => Rel a -> Rel a
+trClos r = trClos' $ srtRel r
+
+--clean implementation, but it seems that quickCheck can generate relations that do not bottom out in the @@ function.
+trClos' :: Ord a => Rel a -> Rel a
+trClos' [] = []
+trClos' (x:xs) = x : trClos (trClos ([x]@@xs) ++ xs)
+
+{-
+--this version works on any input, however it uses nub after processing to deal with initial duplicates.
 trClos :: Ord a => Rel a -> Rel a
 trClos r = nub (srtRel (r ++ trClos' r r))
 
@@ -121,6 +128,7 @@ trClos' r1 r2 = if((length [ r | r <- r2, not (elem r r') ] > 0))
 				then r' ++ (trClos' r1 r')
 				else []
 				where r' = r1 @@ r2
+-}
 
 --sort relations by first element
 srtRel :: Ord a => Rel a -> Rel a
