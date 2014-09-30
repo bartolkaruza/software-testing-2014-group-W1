@@ -111,13 +111,13 @@ r @@ s = nub [(x,z) | (x,y) <- r, (w,z) <- s, y == w]
 trClos :: Ord a => Rel a -> Rel a
 trClos r = trClos' $ srtRel r
 
---clean implementation, but it seems that quickCheck can generate relations that do not bottom out in the @@ function.
+--clean implementation (Bartol), but it seems that quickCheck can generate relations that do not bottom out in the @@ function.
 trClos' :: Ord a => Rel a -> Rel a
 trClos' [] = []
 trClos' (x:xs) = x : trClos (trClos ([x]@@xs) ++ xs)
 
 {-
---this version works on any input, however it uses nub after processing to deal with initial duplicates.
+--this version works on any input (Axel), however it uses nub after processing to deal with initial duplicates.
 trClos :: Ord a => Rel a -> Rel a
 trClos r = nub (srtRel (r ++ trClos' r r))
 
