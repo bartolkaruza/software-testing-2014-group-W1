@@ -8,6 +8,14 @@ import System.Random
 import Test.Hspec
 import Test.QuickCheck
 
+-- run all using
+runAll = do
+           runallTestEx4
+           runallTestEx5
+           main
+           runallTestEx7
+
+
 {-
 	Ex.3 - Random set generation
 	(0.5 hour)
@@ -42,6 +50,15 @@ uniqueList (Set xs) = length (nub xs) == length xs
 test1 = Set [1,2,3,4,5,6,7,8]
 test2 = Set [6,7,8,9,10,11]
 
+-- please use this to check all set operations
+runallTestEx4 = do 
+         print "run test intersect"
+         quickCheck qcIntersectSet
+         print "run test difference"
+         quickCheck qcDiffSet 
+         print "run test union"
+         quickCheck qcUnionSet
+
 {-
 	===================================================
 	intersection of set1 and set2: all elements in set1 that are contained in set2
@@ -54,6 +71,7 @@ intersectSet (Set (x:xs)) set2 = if inSet x set2
 							
 --intersection test	
 --quickCheck qcIntersectSet --> 100 tests passed!
+
 
 qcIntersectSet = ((\s t -> isIntersection (list2set s) (list2set t)) :: [Int] -> [Int] -> Bool)
 					
@@ -96,11 +114,11 @@ isDifferent (Set []) set2 = True
 isDifferent (Set (x:xs)) set2 = (not (inSet x set2)) && ( isDifferent (Set xs) set2)
 
 {-
- unionSet is already defined in the SetOrd, so we skipped the implementation
+ unionSet is already defined in the SetOrd, so we skipped the implementation. We have implemented the following QuickCheck test
 -}
 
-qcUnionSet = ((\s t -> and [((elem x s) && (elem x t) && (elem x u)) || not ((elem x s) && (elem x t))  | x <- s, y <- t, u <- unionSet (Set s) (Set t)]))
-                 where (s :: [Int], t :: [Int])
+qcUnionSet = (\s t -> (and [((inSet x (Set s)) && (inSet x (Set t)) && (inSet x (unionSet (Set s) (Set t)))) || not ((inSet x (Set s)) && (inSet x (Set t)))  | x <- s, y <- t ]) ) :: [Int] -> [Int] -> Bool
+
 
 
 {-
@@ -135,6 +153,11 @@ srtRel :: Ord a => Rel a -> Rel a
 srtRel r = sortBy (\x y -> compare (fst x) (fst y)) r
 
 test3 = [(1,2),(2,3),(3,4)]
+
+runallTestEx5 = do 
+         print "Transitive closure of [(1,2),(2,3),(3,4)]"
+         print $ trClos test3
+
 -- trClos test3 : [(1,2),(1,3),(1,4),(2,3),(2,4),(3,4)]
 
 {- 
@@ -160,6 +183,13 @@ main = hspec $ do
 	Ex.7 Testing trClos
 	(1.5 hours)
 -}
+
+-- run with this
+runallTestEx7 = do
+                 print "using quickcheck" 
+                 quickCheck qcTrClos
+                 print "using own random generator"
+                 testTrClos
 
 -- for each pair in r, check if it is transitive with any other pair it should be transitive with
 isTransitive :: Ord a => Rel a -> Bool
