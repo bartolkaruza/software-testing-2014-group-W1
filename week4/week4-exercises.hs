@@ -96,6 +96,14 @@ isDifferent (Set []) set2 = True
 isDifferent (Set (x:xs)) set2 = (not (inSet x set2)) && ( isDifferent (Set xs) set2)
 
 {-
+ unionSet is already defined in the SetOrd, so we skipped the implementation
+-}
+
+qcUnionSet = ((\s t -> and [((elem x s) && (elem x t) && (elem x u)) || not ((elem x s) && (elem x t))  | x <- s, y <- t, u <- unionSet (Set s) (Set t)]))
+                 where (s :: [Int], t :: [Int])
+
+
+{-
 	Ex.5 Relations
 	(1.5 hour)
 -}
@@ -107,40 +115,20 @@ infixr 5 @@
 (@@) :: Eq a => Rel a -> Rel a -> Rel a
 r @@ s = nub [(x,z) | (x,y) <- r, (w,z) <- s, y == w]
 
-
-
 trClos :: Ord a => Rel a -> Rel a
 trClos r = transClosure r r 
 
+-- uses the property that the union of all the (ra @@ sa) should give a transitive closure, and that the transitive closure has been reached
+-- when no other element is added to the relation
 transClosure :: Ord a => Rel a -> Rel a -> Rel a
-transClosure ra@(r:rs) sa@(s:ss) = if diffSet (Set (ra @@ sa)) (Set ra) == emptySet && 
-                                      diffSet (Set (ra @@ sa)) (Set sa) == emptySet then toRel (unionSet (Set ra) (Set sa))
-                                   else transClosure ra (ra @@ sa) 
+transClosure ra sa = if diffSet t (unionSet (Set sa) (Set ra) ) == emptySet 
+                     then toRel t
+                     else transClosure (toRel t) (toRel t)
+                          where r' = ra @@ sa 
+                                t = (unionSet (Set ra) (Set r'))
 
 toRel :: Set (a, a) -> [(a, a)]
 toRel (Set xs) = xs
-
---trClos :: Ord a => Rel a -> Rel a
---trClos r = trClos' $ srtRel r
-
---clean implementation (Bartol), but it seems that quickCheck can generate relations that do not bottom out in the @@ function.
---trClos' :: Ord a => Rel a -> Rel a
---trClos' [] = []
---trClos' (x:xs) = x : trClos (trClos ([x]@@xs) ++ xs)
-
-{-
---this version works on any input (Axel), however it uses nub after processing to deal with initial duplicates.
-trClos :: Ord a => Rel a -> Rel a
-trClos r = nub (srtRel (r ++ trClos' r r))
-
---regarding the if-check: the given r2 should not contain elements also present in r', this means the @@ function is bottomed out (in some sense), this can happen with symmetrical relations
-trClos' :: Ord a => Rel a -> Rel a -> Rel a
-trClos' r1 [] = []
-trClos' r1 r2 = if((length [ r | r <- r2, not (elem r r') ] > 0)) 
-				then r' ++ (trClos' r1 r')
-				else []
-				where r' = r1 @@ r2
--}
 
 --sort relations by first element
 srtRel :: Ord a => Rel a -> Rel a
@@ -198,7 +186,7 @@ testTrClos = do
 	print $ testClosureTr $ getRandomR gen
 
 getRandomR :: StdGen -> [(Int, Int)]
-getRandomR g = zip (getRndList 100 20 g) (getRndList 100 20 g)
+getRandomR g = zip (getRndList 100 100 g) (getRndList 100 100 g)
 
 --quickCheck function (generate two Int lists, zip them to get a Int relation [(Int, Int)]
 qcTrClos = ((\x y -> testClosureTr (zip x y)) :: [Int] -> [Int] -> Bool)
