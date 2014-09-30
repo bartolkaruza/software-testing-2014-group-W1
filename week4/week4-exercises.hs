@@ -121,7 +121,7 @@ trClos' (x:xs) = x : trClos (trClos ([x]@@xs) ++ xs)
 trClos :: Ord a => Rel a -> Rel a
 trClos r = nub (srtRel (r ++ trClos' r r))
 
---regarding the if-check: the given r2 should not contain elements also present in r', this means the @@ function is bottomed out, this can happen with symmetrical relations
+--regarding the if-check: the given r2 should not contain elements also present in r', this means the @@ function is bottomed out (in some sense), this can happen with symmetrical relations
 trClos' :: Ord a => Rel a -> Rel a -> Rel a
 trClos' r1 [] = []
 trClos' r1 r2 = if((length [ r | r <- r2, not (elem r r') ] > 0)) 
