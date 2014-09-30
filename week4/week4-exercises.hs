@@ -139,11 +139,13 @@ trClos r = transClosure r r
 -- uses the property that the union of all the (ra @@ sa) should give a transitive closure, and that the transitive closure has been reached
 -- when no other element is added to the relation
 transClosure :: Ord a => Rel a -> Rel a -> Rel a
-transClosure ra sa = if diffSet t (unionSet (Set sa) (Set ra) ) == emptySet 
-                     then toRel t
-                     else transClosure (toRel t) (toRel t)
-                          where r' = ra @@ sa 
-                                t = (unionSet (Set ra) (Set r'))
+transClosure [] [] = []
+transClosure ra sa | (length ra) /= (length sa) =  error "list of unequal length"
+                   | otherwise =  if diffSet (Set t) (unionSet (Set sa) (Set ra) ) == emptySet 
+                                  then t
+                                  else transClosure t t
+                                     where r' = ra @@ sa 
+                                           Set t = (unionSet (Set ra) (Set r'))
 
 toRel :: Set (a, a) -> [(a, a)]
 toRel (Set xs) = xs
@@ -218,8 +220,8 @@ testTrClos = do
 getRandomR :: StdGen -> [(Int, Int)]
 getRandomR g = zip (getRndList 100 100 g) (getRndList 100 100 g)
 
---quickCheck function (generate two Int lists, zip them to get a Int relation [(Int, Int)]
-qcTrClos = ((\x y -> testClosureTr (zip x y)) :: [Int] -> [Int] -> Bool)
+--quickCheck function 
+qcTrClos = ((\z -> testClosureTr z) :: [(Int, Int)] -> Bool )
 
 ---- BONUS (5 min)
 {- if we define the value that we put in as v then we can see that the formula is (x+v/x)/2. When x=sqrt(v) then v/x=x, so in that case 
