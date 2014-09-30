@@ -116,14 +116,15 @@ mySpecQC = describe "trClos" $ do
            
 	 
     it "returns a relation that is transitive" $ do
-       let r = trClos [(1,2),(2,3),(3,4)]
-       all (==True) [(elem (x,z) r) | (x,y) <- r,  (w,z) <- r, y == w]	   
+       property $ checkTransitivity   
 	   
 checkBaseRelation r = all (\x -> (elem x (trClos r))) r
    where types = r :: [(Int, Int)]
 	
-checkTransitivity r = all (==True) [(elem (x,z) r) | (x,y) <- r,  (w,z) <- r, y == w]
-   where types = r :: [(Int, Int)]
+checkTransitivity r s = let 
+                         t = (zip r s) 
+                      in all (==True) [(elem (x,z) t) | (x,y) <- t,  (w,z) <- t, y == w]
+   where types = (r :: [Int], s :: [Int])
 
 	
 toRel :: Set (a, a) -> Rel a
