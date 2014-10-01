@@ -60,48 +60,60 @@ grid2sud gr = \ (r,c) -> pos gr (r,c)
 showSudoku :: Sudoku -> IO()
 showSudoku = showGrid . sud2grid
 
+--returns block in which x is contained
 bl :: Int -> [Int]
 bl x = concat $ filter (elem x) blocks 
 
+--returns subgrid based on (r,c) pair (block of r * block of c)
 subGrid :: Sudoku -> (Row,Column) -> [Value]
 subGrid s (r,c) = 
   [ s (r',c') | r' <- bl r, c' <- bl c ]
 
+-- returns list of free elements ([1..9] - seq)
 freeInSeq :: [Value] -> [Value]
 freeInSeq seq = values \\ seq 
 
+-- return list of free values in given row (positions = [1..9]) (s (r,i) returns value of row r and column i in s)
 freeInRow :: Sudoku -> Row -> [Value]
 freeInRow s r = 
   freeInSeq [ s (r,i) | i <- positions  ]
 
+-- return list of free values in given column 
 freeInColumn :: Sudoku -> Column -> [Value]
 freeInColumn s c = 
   freeInSeq [ s (i,c) | i <- positions ]
 
+-- returns free values within subgrid (in which (r,c) lie)
 freeInSubgrid :: Sudoku -> (Row,Column) -> [Value]
 freeInSubgrid s (r,c) = freeInSeq (subGrid s (r,c))
 
+-- returns all free values for a given (r,c) by intersecting free values of row, column and subgrid
 freeAtPos :: Sudoku -> (Row,Column) -> [Value]
 freeAtPos s (r,c) = 
   (freeInRow s r) 
    `intersect` (freeInColumn s c) 
    `intersect` (freeInSubgrid s (r,c)) 
 
+-- only unique elements?
 injective :: Eq a => [a] -> Bool
 injective xs = nub xs == xs
 
+-- unique elements in row?
 rowInjective :: Sudoku -> Row -> Bool
 rowInjective s r = injective vs where 
    vs = filter (/= 0) [ s (r,i) | i <- positions ]
 
+-- unique elements in column?
 colInjective :: Sudoku -> Column -> Bool
 colInjective s c = injective vs where 
    vs = filter (/= 0) [ s (i,c) | i <- positions ]
 
+-- unique elements in subgrid?
 subgridInjective :: Sudoku -> (Row,Column) -> Bool
 subgridInjective s (r,c) = injective vs where 
    vs = filter (/= 0) (subGrid s (r,c))
 
+-- sudoku consistent ?? (everything unique)
 consistent :: Sudoku -> Bool
 consistent s = and $
                [ rowInjective s r |  r <- positions ]
@@ -111,12 +123,14 @@ consistent s = and $
                [ subgridInjective s (r,c) | 
                     r <- [1,4,7], c <- [1,4,7]]
 
+--update sudoku by setting a value on (r,c)
 extend :: Sudoku -> ((Row,Column),Value) -> Sudoku
 extend = update
 
 update :: Eq a => (a -> b) -> (a,b) -> a -> b 
 update f (y,z) x = if x == y then z else f x 
 
+--possible values for given position (r,c)
 type Constraint = (Row,Column,[Value])
 
 type Node = (Sudoku,[Constraint])
@@ -127,6 +141,7 @@ showNode = showSudoku . fst
 solved  :: Node -> Bool
 solved = null . snd
 
+--extend node by extending sudoku in Node with possible values for position (r,c) and pruning the recently added values for (r,c) from the Node constraints
 extendNode :: Node -> Constraint -> [Node]
 extendNode (s,constraints) (r,c,vs) = 
    [(extend s ((r,c),v),
@@ -150,16 +165,19 @@ prune (r,c,v) ((x,y,zs):rest)
 sameblock :: (Row,Column) -> (Row,Column) -> Bool
 sameblock (r,c) (x,y) = bl r == bl x && bl c == bl y 
 
+--create first node for grid
 initNode :: Grid -> [Node]
 initNode gr = let s = grid2sud gr in 
               if (not . consistent) s then [] 
               else [(s, constraints s)]
 
+-- every position in s that has value 0
 openPositions :: Sudoku -> [(Row,Column)]
 openPositions s = [ (r,c) | r <- positions,  
                             c <- positions, 
                             s (r,c) == 0 ]
 
+--construct all constraints for all positions in s
 constraints :: Sudoku -> [Constraint] 
 constraints s = sortBy length3rd 
     [(r,c, freeAtPos s (r,c)) | 
@@ -172,10 +190,13 @@ exmple2 = T 0 [exmple1,exmple1,exmple1]
 
 grow :: (node -> [node]) -> node -> Tree node 
 grow step seed = T seed (map (grow step) (step seed))
+-- >grow (\x -> if x < 2 then [x+1, x+1] else []) 0
+-- >T 0 [T 1 [T 2 [],T 2 []],T 1 [T 2 [],T 2 []]]
 
 count :: Tree a -> Int 
 count (T _ ts) = 1 + sum (map count ts)
 
+--depth-first search returning all nodes that match goal
 search :: (node -> [node]) 
        -> (node -> Bool) -> [node] -> [node]
 search children goal [] = []
@@ -184,6 +205,7 @@ search children goal (x:xs)
   | otherwise = search children goal 
                                 ((children x) ++ xs)
 
+--search Nodes until node with no constraints is found, extending each encountered node (and thus pruning it's constraints). Then the sudoku is solved.
 solveNs :: [Node] -> [Node]
 solveNs = search succNode solved 
 
@@ -191,6 +213,7 @@ succNode :: Node -> [Node]
 succNode (s,[]) = []
 succNode (s,p:ps) = extendNode (s,ps) p 
 
+--solve a sudoku by creating an initial Node and search until a Node with null constraints is found (that is, when all constraints are minimized to null)
 solveAndShow :: Grid -> IO()
 solveAndShow gr = solveShowNs (initNode gr)
 
@@ -252,6 +275,7 @@ example5 = [[1,0,0,0,0,0,0,0,0],
             [0,0,0,0,0,0,0,8,0],
             [0,0,0,0,0,0,0,0,9]]
 
+-- create a Node that includes a sudoku with 0 on all positions and full constraints ([1..9]) on all positions
 emptyN :: Node
 emptyN = (\ _ -> 0,constraints (\ _ -> 0))
 
@@ -265,6 +289,7 @@ getRandomItem xs =
      return [xs !! n]
      where maxi = length xs - 1
 
+--shuffle elements in list
 randomize :: Eq a => [a] -> IO [a]
 randomize xs = do y <- getRandomItem xs 
                   if null y 
@@ -272,6 +297,7 @@ randomize xs = do y <- getRandomItem xs
                     else do ys <- randomize (xs\\y)
                             return (head y:ys)
 
+--two constraints with same length?
 sameLen :: Constraint -> Constraint -> Bool
 sameLen (_,_,xs) (_,_,ys) = length xs == length ys
 
@@ -287,6 +313,7 @@ rsuccNode (s,cs) =
         then return []
         else return (extendNode (s,cs\\xs) (head xs))
 
+--randomly solve a sudoku by searching through nodes while extending it and randomly minimizing constraints for each position
 rsolveNs :: [Node] -> IO [Node]
 rsolveNs ns = rsearch rsuccNode solved (return ns)
 
@@ -304,12 +331,14 @@ rsearch succ goal ionodes =
              if null (tail xs) then return []
              else rsearch succ goal (return $ tail xs)
 
+-- generate a random sudoku starting with an empty sudoku
 genRandomSudoku :: IO Node
 genRandomSudoku = do [r] <- rsolveNs [emptyN]
                      return r
 
 randomS = genRandomSudoku >>= showNode
 
+-- if the solver returns just one node, then the sudoku has a unique solution
 uniqueSol :: Node -> Bool
 uniqueSol node = singleton (solveNs [node]) where 
   singleton [] = False
@@ -323,6 +352,7 @@ eraseN :: Node -> (Row,Column) -> Node
 eraseN n (r,c) = (s, constraints s) 
   where s = eraseS (fst n) (r,c) 
 
+--minimalize Node by setting positions to 0 in the node (based on the given list of rcs), until a unique solution is found
 minimalize :: Node -> [(Row,Column)] -> Node
 minimalize n [] = n
 minimalize n ((r,c):rcs) 
@@ -330,11 +360,14 @@ minimalize n ((r,c):rcs)
    | otherwise    = minimalize n  rcs
   where n' = eraseN n (r,c)
 
+--all filled positions in a sudoku
 filledPositions :: Sudoku -> [(Row,Column)]
 filledPositions s = 
   [ (r,c) | r <- positions,  
             c <- positions, s (r,c) /= 0 ]
 
+-- generate a random problem from a (solved random Sudoku)
+-- by minimizing the Node with a randomized list of positions from the solved sudoku
 genProblem :: Node -> IO Node
 genProblem n = do ys <- randomize xs
                   return (minimalize n ys)
