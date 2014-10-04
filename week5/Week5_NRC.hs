@@ -1,4 +1,4 @@
-module Week5 where 
+module Week5_NRC where 
 
 import Data.List
 import System.Random
@@ -15,6 +15,9 @@ values    = [1..9]
 blocks :: [[Int]]
 blocks = [[1..3],[4..6],[7..9]]
 
+nrcBlocks :: [[Int]]
+nrcBlocks = [[2..4],[6..8]]
+
 showVal :: Value -> String
 showVal 0 = " "
 showVal d = show d
@@ -22,28 +25,56 @@ showVal d = show d
 showRow :: [Value] -> IO()
 showRow [a1,a2,a3,a4,a5,a6,a7,a8,a9] = 
  do  putChar '|'         ; putChar ' '
-     putStr (showVal a1) ; putChar ' '
+     putStr (showVal a1) ; putChar ' ' ; putChar ' ' ; putChar ' '
      putStr (showVal a2) ; putChar ' '
-     putStr (showVal a3) ; putChar ' '
+     putStr (showVal a3) ; putChar ' ' 
      putChar '|'         ; putChar ' '
-     putStr (showVal a4) ; putChar ' '
-     putStr (showVal a5) ; putChar ' '
+     putStr (showVal a4) ; putChar ' ' ; putChar ' '
+     putStr (showVal a5) ; putChar ' ' ; putChar ' '
      putStr (showVal a6) ; putChar ' '
      putChar '|'         ; putChar ' '
-     putStr (showVal a7) ; putChar ' '
-     putStr (showVal a8) ; putChar ' '
+     putStr (showVal a7) ; putChar ' '  
+     putStr (showVal a8) ; putChar ' ' ; putChar ' ' ; putChar ' '
      putStr (showVal a9) ; putChar ' '
+     putChar '|'         ; putChar '\n'
+	 
+showNrcRow :: [Value] -> IO()
+showNrcRow [a1,a2,a3,a4,a5,a6,a7,a8,a9] = 
+ do  putChar '|'         ; putChar ' '
+     putStr (showVal a1) ; putChar ' ';
+	 putChar '|'         ; putChar ' '
+     putStr (showVal a2) ; putChar ' '
+     putStr (showVal a3) ; putChar ' ';
+     putChar '|'         ; putChar ' '
+     putStr (showVal a4) ; 
+	 putChar '|'         ; putChar ' '
+     putStr (showVal a5) ; putChar ' ';
+	 putChar '|'         ; 
+     putStr (showVal a6) ; putChar ' ';
+     putChar '|'         ; putChar ' '
+     putStr (showVal a7) ; putChar ' '
+     putStr (showVal a8) ; putChar ' ';
+	 putChar '|'         ; putChar ' '	 
+     putStr (showVal a9) ; putChar ' ';
      putChar '|'         ; putChar '\n'
 
 showGrid :: Grid -> IO()
 showGrid [as,bs,cs,ds,es,fs,gs,hs,is] =
- do putStrLn ("+-------+-------+-------+")
-    showRow as; showRow bs; showRow cs
-    putStrLn ("+-------+-------+-------+")
-    showRow ds; showRow es; showRow fs
-    putStrLn ("+-------+-------+-------+")
-    showRow gs; showRow hs; showRow is
-    putStrLn ("+-------+-------+-------+")
+ do putStrLn ("+---------+---------+---------+");
+    showRow as; 
+	putStrLn ("|   +-----|--+   +--|-----+   |");
+	showNrcRow bs; showNrcRow cs;
+    putStrLn ("+---------+---------+---------+");
+    showNrcRow ds; 
+	putStrLn ("|   +-----|--+   +--|-----+   |");
+	showRow es; 
+	putStrLn ("|   +-----|--+   +--|-----+   |");
+	showNrcRow fs;
+    putStrLn ("+---------+---------+---------+");
+    showNrcRow gs; showNrcRow hs;
+	putStrLn ("|   +-----|--+   +--|-----+   |");
+	showRow is;
+    putStrLn ("+---------+---------+---------+");
 
 type Sudoku = (Row,Column) -> Value
 
@@ -65,10 +96,17 @@ showSudoku = showGrid . sud2grid
 bl :: Int -> [Int]
 bl x = concat $ filter (elem x) blocks 
 
+nrcBl :: Int -> [Int]
+nrcBl x = concat $ filter (elem x) nrcBlocks
+
 --returns subgrid based on (r,c) pair (block of r * block of c)
 subGrid :: Sudoku -> (Row,Column) -> [Value]
 subGrid s (r,c) = 
   [ s (r',c') | r' <- bl r, c' <- bl c ]
+  
+nrcSubGrid :: Sudoku -> (Row,Column) -> [Value]
+nrcSubGrid s (r,c) = 
+  [ s (r',c') | r' <- nrcBl r, c' <- nrcBl c ]
 
 -- returns list of free elements ([1..9] - seq)
 freeInSeq :: [Value] -> [Value]
@@ -113,8 +151,12 @@ colInjective s c = injective vs where
 subgridInjective :: Sudoku -> (Row,Column) -> Bool
 subgridInjective s (r,c) = injective vs where 
    vs = filter (/= 0) (subGrid s (r,c))
+   
+-- unique elements in subgrid?
+nrcSubgridInjective :: Sudoku -> (Row,Column) -> Bool
+nrcSubgridInjective s (r,c) = injective vs where 
+   vs = filter (/= 0) (nrcSubGrid s (r,c))
 
--- sudoku consistent ?? (everything unique)
 consistent :: Sudoku -> Bool
 consistent s = and $
                [ rowInjective s r |  r <- positions ]
@@ -123,6 +165,9 @@ consistent s = and $
                 ++
                [ subgridInjective s (r,c) | 
                     r <- [1,4,7], c <- [1,4,7]]
+				++
+			   [ nrcSubgridInjective s (r,c) | 
+                    r <- [2,6], c <- [2,6]]
 
 --update sudoku by setting a value on (r,c)
 extend :: Sudoku -> ((Row,Column),Value) -> Sudoku
@@ -160,11 +205,15 @@ prune (r,c,v) ((x,y,zs):rest)
   | r == x = (x,y,zs\\[v]) : prune (r,c,v) rest
   | c == y = (x,y,zs\\[v]) : prune (r,c,v) rest
   | sameblock (r,c) (x,y) = 
-        (x,y,zs\\[v]) : prune (r,c,v) rest
+        (x,y,zs\\[v]) : prune (r,c,v) rest 
+  | nrcSameBlock (r,c) (x,y) = (x,y,zs\\[v]) : prune (r,c,v) rest 
   | otherwise = (x,y,zs) : prune (r,c,v) rest
 
 sameblock :: (Row,Column) -> (Row,Column) -> Bool
 sameblock (r,c) (x,y) = bl r == bl x && bl c == bl y 
+
+nrcSameBlock :: (Row,Column) -> (Row,Column) -> Bool
+nrcSameBlock (r,c) (x,y) = nrcBl r == nrcBl x && nrcBl c == nrcBl y
 
 --create first node for grid
 initNode :: Grid -> [Node]
