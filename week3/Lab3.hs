@@ -48,7 +48,7 @@ cnf (Prop x) = Prop x
 cnf (Neg (Prop x)) = Neg (Prop x)
 cnf (Cnj fs) = Cnj(map cnf fs)
 cnf (Dsj []) = Dsj[]                --distList cannot handle empty list
-cnf (Dsj fs) = --distList (map cnf fs)
+cnf (Dsj fs) = distList (map cnf fs)
 
 --apply distribution laws on list of forms
 --precondition: every form is in cnf
@@ -65,15 +65,70 @@ dist f1 f2 = Dsj[f1, f2]
 -- end
 
 
--- cnf: has implemented De Morgan laws
-isDeMorgan :: Form -> Bool
-isDeMorgan (Prop x) = True
-isDeMorgan (Neg (Prop x)) = True
-isDeMorgan (Dsj [f1, Cnj [f2, f3]]) = False
-isDeMorgan (Dsj [Cnj [f1, f2], f3]) = False
-isDeMorgan (Cnj fs) = and (map isDeMorgan fs)
-isDeMorgan (Dsj fs) = and (map isDeMorgan fs)
+-- ex 3
+
+-- cnf: has implemented distribution law
+isCnf :: Form -> Bool
+isCnf (Prop x) = True
+isCnf (Neg (Prop x)) = True
+isCnf (Dsj [f1, Cnj [f2, f3]]) = False
+isCnf (Dsj [Cnj [f1, f2], f3]) = False
+isCnf (Cnj fs) = and (map isCnf fs)
+isCnf (Dsj fs) = and (map isCnf fs)
 
 
--- failing test : testForms 100 (isDeMorgan . nnf . arrowfree)
--- success test : testForms 100 (isDeMorgan . cnf . nnf . arrowfree)
+-- failing test : testForms 100 (isCnf . nnf . arrowfree)
+-- success test : testForms 100 (isCnf . cnf . nnf . arrowfree)
+
+-- ex 4
+
+type Clause = [Int]
+type Clauses = [Clause]
+
+-- does not work either...
+
+{-
+
+cnf2cls :: Form -> Clauses
+cnf2cls (Prop x) = [[x]]
+cnf2cls (Neg (Prop x)) = [[-x]]
+cnf2cls (Cnj fs) = map cnf2cls' fs
+cnf2cls (Dsj fs) = [foldl (++) [] (map cnf2cls' fs)]
+
+cnf2cls' :: Form -> Clause
+cnf2cls' (Prop x) = [x]
+cnf2cls' (Neg (Prop x)) = [-x]
+--cnf2cls' (Cnj fs) = foldl (++) [] (map cnf2cls' fs)
+--cnf2cls' (Dsj fs) = foldl (++) [] (map cnf2cls' fs)
+
+
+cnf2cls :: Form -> Clauses -- returns [[Clause],[Clause],[Clause],...]
+cnf2cls (Cnj fs) = map cnf2cls' fs -- Cnj -> 
+cnf2cls x = [cnf2cls' x]
+
+cnf2cls' :: Form -> Clause -- returns [Int, Int, Int,...]
+cnf2cls' (Dsj fs) = map cnf2cls' fs
+cnf2cls' (Prop x) = [x]
+cnf2cls' (Neg (Prop x)) = [-x]
+
+-}
+
+cnf2cls :: Form -> Clauses
+cnf2cls (Cnj fs) = (map clsDsj fs)
+cnf2cls f = [[clsProp f]]
+
+clsDsj :: Form -> Clause
+clsDsj (Dsj fs) = (map clsProp fs)
+clsDsj f = [clsProp f]
+
+clsProp :: Form -> Int
+clsProp (Prop x) = x
+clsProp (Neg (Prop x)) = -1*x
+
+{-
+
+testCls :: Clauses -> Bool
+testcls [x] = True
+testcls ((x:y):) = True
+
+-}
