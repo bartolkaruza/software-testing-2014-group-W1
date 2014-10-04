@@ -2,8 +2,8 @@ module Lab5
 
 where
 
---import Week5
-import Week5_NRC
+import Week5
+--import Week5_NRC
 import Data.List
 import Test.QuickCheck
 import Test.Hspec
@@ -80,8 +80,7 @@ removeHint n = eraseN n (hints!!0)
 					 
 					 
 {- 
-	Ex.3 sudoku with empty blocks
-	not finished yet
+	Ex.3 sudoku with empty blocks ???
 -}
 
 showProblem' :: IO ()
