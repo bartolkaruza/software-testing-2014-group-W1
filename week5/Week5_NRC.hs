@@ -204,8 +204,7 @@ prune _ [] = []
 prune (r,c,v) ((x,y,zs):rest)
   | r == x = (x,y,zs\\[v]) : prune (r,c,v) rest
   | c == y = (x,y,zs\\[v]) : prune (r,c,v) rest
-  | sameblock (r,c) (x,y) = 
-        (x,y,zs\\[v]) : prune (r,c,v) rest 
+  | sameblock (r,c) (x,y) = (x,y,zs\\[v]) : prune (r,c,v) rest 
   | nrcSameBlock (r,c) (x,y) = (x,y,zs\\[v]) : prune (r,c,v) rest 
   | otherwise = (x,y,zs) : prune (r,c,v) rest
 
@@ -423,7 +422,7 @@ filledPositions s =
 -- by minimizing the Node with a randomized list of positions from the solved sudoku
 genProblem :: Node -> IO Node
 genProblem n = do ys <- randomize xs
-                  return (minimalize n xs)
+                  return (minimalize n ys)
    where xs = filledPositions (fst n)
 
    
