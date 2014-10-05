@@ -374,7 +374,7 @@ filledPositions s =
 -- by minimizing the Node with a randomized list of positions from the solved sudoku
 genProblem :: Node -> IO Node
 genProblem n = do ys <- randomize xs
-                  return (minimalize n xs)
+                  return (minimalize n ys)
    where xs = filledPositions (fst n)
 
    
