@@ -86,23 +86,32 @@ removeHint n = eraseN n (hints!!0)
 showProblem' :: IO ()
 showProblem' = do 
 				[r] <- rsolveNs [emptyN]
-				showNode $ clearBlocks r
-				s  <- genProblem $ clearBlocks r
-				showNode s
-
-clearBlocks :: Node -> Node
-clearBlocks n = clearBlocks' blocks n
-				where blocks = [(r,c) | r <- [1..6], c <- [1..3]]
-
-clearBlocks' :: [(Row,Column)] -> Node -> Node
-clearBlocks' [x] n = eraseN n x
-clearBlocks' (x:xs) n = clearBlocks' xs (eraseN n x)
+				showNode $ r
+				s <- genProblem $ minimalizeBlocks $ r
+				showNode $ s
 				
-randomS' = genRandomSudoku >>= showNode . clearBlocks
+minimalizeBlocks :: Node -> Node
+minimalizeBlocks n = minimalize n xs
+   where xs = [(r,c) | r <- [1..3], c <- [1..3]] ++
+				--[(r,c) | r <- [7..9], c <- [1..3]] ++ 
+				--use for four blocks, does not work always..
+			      [(r,c) | r <- [4..6], c <- [4..6]] ++
+			         [(r,c) | r <- [7..9], c <- [7..9]]
 
 {-
 	Ex. 4/ Ex.5 NRC solver (1 hour)
 	INSTRUCTION: first comment import Week5 and uncomment Week5_NRC
+	
+	Extra functions:
+	
+	nrcBlocks :: [[Int]]
+	nrcBl :: Int -> [Int]
+	nrcSubgridInjective :: Sudoku -> (Row,Column) -> Bool
+	nrcSameBlock (r,c) (x,y) = nrcBl r == nrcBl x && nrcBl c == nrcBl y
+	
+	Extensions done on: 
+	consistent
+	prune
 -}
 
 {-
@@ -142,4 +151,16 @@ nrcExample1 = [[0,0,0,3,0,0,0,0,0],
 	|   +-----|--+   +--|-----+   |
 	| 1   4 2 | 5  6  3 | 8 9   7 |
 	+---------+---------+---------+
+-}
+
+{-
+	Ex.6
+-}
+
+{-
+	Constraint relaxation is probably more easy applicable than the other approaches (involving computational models) described by Pelanek.
+	
+	The increase in number of solutions after relaxing constraints (by removing hints) should indicate the relative difficulty of the sudoku compared to other sudoku's.
+	
+	--> randomly removing hint --> count number of constraints added in Node --> count the increase in number of solutions the solver comes up with
 -}
