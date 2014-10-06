@@ -4,31 +4,47 @@ where
 import Data.List
 import Week5
 import SS
+import Control.Exception (evaluate)
+import Test.Hspec
 
 
 {- 1. 
  Doing this by quickcheck would require us to be able to generate grids that
    - specify a correct sudoku problem
    - specify a correct sudoku answer
- This means grids that do not have duplicates in rows, columns and subgrids
-
-start - hspec $ do
-           describe "SS" $ do
-               describe "rsolveNs" 
-                   it "returns a random sudoku problem"
-
-                   it "
+ This means grids that do not have duplicates in rows, columns and subgrids, which we can't accomplish using QuickCheck
 -}
+start = hspec $ do
+           describe "SS" $ do
+               describe "rsolveNs" $ do 
+                   it "returns a node that contains no empty boxes" $ do
+                      [s] <- rsolveNs [emptyN]	 
+                      length (openPositions (fst s)) `shouldBe` 0
+
+                   it "returns a node that is consistent in that it contains no duplicates in rows, columns, subgrids" $ do
+                      [s] <- rsolveNs [emptyN]	 
+                      (consistent (fst s)) `shouldBe` True  
+
+               describe "genProblem" $ do
+                   it "returns a consistent sudoku" $ do
+                      [s] <- rsolveNs [emptyN]
+                      t <- genProblem s
+                      (consistent (fst t)) `shouldBe` True					  
+
+                   it "returns a problem with a unique solution" $ do
+                      [s] <- rsolveNs [emptyN]
+                      t <- genProblem s
+                      (uniqueSol t) `shouldBe` True	
+
 
 {- 2. We can test this by generating problems and removing every hint (one at a time) and see if it gives a unique solution
 -}
 
-{-testIsMinimal = do [r] <- rsolveNs [emptyN]
-                   showNode r
-                   s  <- genProblem r
-                   all (\x y -> length $ rsolveNs (removeIndex x y s) == 1) [1..9] [1..9]
+testIsMinimal = do
+               [r] <- rsolveNs [emptyN]
+               s   <- genProblem r
+               return $ not (and $ [uniqueSol ((eraseS (fst s) (x,y)), constraints (eraseS (fst s) (x,y))) | x <- [1..9], y <- [1..9]])
 
-removeIndex x y s = -}
 {- 3. Create a problem, then remove all blocks and put them as children in the tree (like solving). Then 
       do a depth first search to find the one with the most empty blocks. Minimalize this one.
 	  
