@@ -76,8 +76,18 @@ module Main where
             it "returns the transitive closure of a list" $ do
                 trClos [(1,2),(2,3),(3,4)] `shouldBe` [(1,2),(1,3),(1,4),(2,3),(2,4),(3,4)]
 
-            it "returns an empty list when used with an empty list" $ do
-                trClos [(1,2),(2,3),(3,4),(4,3)] `shouldBe` []
+-- Ex.7
+
+    -- Checks some of the properties of a transitive closure
+    -- This test may yield false positives
+    isTrClos :: Eq a => Rel a -> Rel a -> Bool
+    isTrClos [] _ = True
+    isTrClos [x] [y] = x == y
+    isTrClos (x:xs) ys = (elem x ys) && (isTrClos xs ys)
+
+    testTrClos :: IO()
+    testTrClos = verboseCheck (\a -> isTrClos a (trClos a) :: [a] -> Bool)
+
 
 
 
