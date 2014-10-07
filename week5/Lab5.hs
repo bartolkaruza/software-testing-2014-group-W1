@@ -52,6 +52,9 @@ testIsMinimal = do
 	 - when blocks on one row, the internal rows are interchangable, so it doesn't have a unique solution
 	 - when blocks on one column, the internal columns are interchangable
 	 - when two blocks on a row or on a column are empty, the blocks are not necessarily interchangable
+	 
+	 In 4 blocks it is dependent on the other blocks. As there are now two blocks empty in at least two columns, it could well be
+	 that there are no problems that give a unique solution.
 -}
 
 -- gets a list with filled positions
@@ -79,7 +82,7 @@ test = do [r] <- rsolveNs [emptyN]
           s <- genProblem3B r 3
           showNode s
 {- 4. This means adding a constraint which where the blocks' are injective 
-      I have implemented this in the file Week5-exercises.hs. 
+      I have implemented this in the file Week5.hs. 
 	  precondition for every sudoku:
       for all i,j,i',j' in [2..4]++[6..8] if grid(i,j)==grid(i',j') then i'==i && j'==j || grid(i,j)==0
 	  postconditions:
@@ -105,10 +108,34 @@ nrcSudoku = [[0,0,0,3,0,0,0,0,0],
 	[8,9,1,6,2,4,7,5,3],
     [3,5,4,9,7,1,2,8,6],
 	[5,6,7,2,8,9,4,3,1],
-	[9,8,3,1,4,7,2,8,6],
+	[9,8,3,1,4,7,5,6,2],
 	[1,4,2,5,6,3,8,9,7]]
 -}
 
 {- 5. See implementation in Week5.hs -}
 
 {- 6. The more values can be filled in for the minimal constraint at some point of the solving process the harder it is -}
+
+removeHiddenSingle :: Node -> (Row,Column) -> Node
+removeHiddenSingle n (r,c) | length (snd (eraseN n (r,c))) == 1 = eraseN n (r,c)
+                           | otherwise =  emptyN
+							 
+-- removes items until the list of items is empty.. if removing an item makes multiple solutions possible, then it halts
+minimalizeSimple :: Node -> [(Row,Column)] -> Node
+minimalizeSimple n [] = n
+minimalizeSimple n ((r,c):rcs) 
+   | uniqueSol n' = minimalizeSimple n' rcs
+   | otherwise    = minimalizeSimple n  rcs
+  where n' = removeHiddenSingle n (r,c)
+  	
+-- removes random items one by one until it is a minimum solution
+genProblemSimple :: Node -> IO Node
+genProblemSimple n = do ys <- randomize xs
+                        return (minimalizeSimple n ys)
+                     where xs = filledPositions (fst n)
+
+simpleSudoku :: IO ()
+simpleSudoku = do [r] <- rsolveNs [emptyN]
+                  showNode r
+                  s  <- genProblemSimple r
+                  showNode s
