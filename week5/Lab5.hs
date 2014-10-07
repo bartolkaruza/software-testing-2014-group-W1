@@ -87,7 +87,9 @@ test = do [r] <- rsolveNs [emptyN]
       for all i,j,i',j' in [2..4]++[6..8] if grid(i,j)==grid(i',j') then i'==i && j'==j || grid(i,j)==0
 	  postconditions:
 	  for all i,j,i',j' in [2..4]++[6..8] if grid(i,j)==grid(i',j') then i'==i && j'==j
-      for all i,j in [2..4]++[6..8] grid(i,j)<>0                                                            
+      for all i,j in [2..4]++[6..8] grid(i,j)<>0  
+
+   -- solve sudoku with call solveNrcSudoku nrcSudoku	  
 -}
 nrcSudoku :: Grid
 nrcSudoku = [[0,0,0,3,0,0,0,0,0],
@@ -100,6 +102,10 @@ nrcSudoku = [[0,0,0,3,0,0,0,0,0],
              [0,8,0,0,4,0,0,0,0],
              [0,0,2,0,0,0,0,0,0]]
 
+			 
+solveNrcSudoku r = do
+                    [t] <- rsolveNs' [((grid2sud r), constraints (grid2sud r))]	
+                    showNode' t					
 {- Solution to NRC Sudoku:
    [[4,7,8,3,9,2,6,1,5],
     [6,1,9,7,5,8,3,2,4],
