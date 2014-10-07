@@ -53,6 +53,8 @@ testIsMinimal = do
 	 - when blocks on one column, the internal columns are interchangable
 	 - when two blocks on a row or on a column are empty, the blocks are not necessarily interchangable
 -}
+eraseB :: Sudoku -> (Row,Column) -> Sudoku
+eraseB s (r,c) = eraseS s (r,c)
 
 {- 4. This means adding a constraint which where the blocks' are injective 
       I have implemented this in the file Week5-exercises.hs. 
