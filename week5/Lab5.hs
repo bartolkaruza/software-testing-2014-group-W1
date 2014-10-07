@@ -2,8 +2,8 @@ module Lab5
 
 where
 
-import Week5
---import Week5_NRC
+--import Week5
+import Week5_NRC
 import Data.List
 import Test.QuickCheck
 import Test.Hspec
@@ -104,16 +104,22 @@ removeHint n = eraseN n (hints!!0)
 					 
 					 
 {- 
-	Ex.3 sudoku with empty blocks ???
+	Ex.3 sudoku with empty blocks
+	
+	 - when empty blocks on one row, the internal rows are interchangable, so it doesn't have a unique solution
+	- when empty blocks on one column, the internal columns are interchangable,, so it doesn't have a unique solution
+	- when two empty blocks on a row or on a column are empty, the blocks are not necessarily interchangable, so it could have a unique solution
 -}
 
+--first minimize certain blocks, then generate a problem on that
 showProblem' :: IO ()
 showProblem' = do 
 				[r] <- rsolveNs [emptyN]
 				showNode $ r
 				s <- genProblem $ minimalizeBlocks $ r
 				showNode $ s
-				
+
+--minimize blocks in sudoku diagonally (for 3 empty blocks)			
 minimalizeBlocks :: Node -> Node
 minimalizeBlocks n = minimalize n xs
    where xs = [(r,c) | r <- [1..3], c <- [1..3]] ++
@@ -142,7 +148,7 @@ minimalizeBlocks n = minimalize n xs
 	Formal constraint:
 	Forall (r,c) in Sudoku s: if both r and c in [2..4] or [6..8] then the value of (r,c) should not exist in other fields that exist within the subGrid that ranges from [2..4] and/or [6..8]. 
 	
-	Shorter version: the list of values contained in subGrids that range from [2..4] and/or [6..8] should be injective
+	Shorter version: the list of values contained in subGrids that range from [2..4] and/or [6..8] should be unique
 -}
 
 

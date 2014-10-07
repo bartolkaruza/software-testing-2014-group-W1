@@ -126,12 +126,17 @@ freeInColumn s c =
 freeInSubgrid :: Sudoku -> (Row,Column) -> [Value]
 freeInSubgrid s (r,c) = freeInSeq (subGrid s (r,c))
 
+-- returns free values within subgrid (in which (r,c) lie)
+nrcFreeInSubgrid :: Sudoku -> (Row,Column) -> [Value]
+nrcFreeInSubgrid s (r,c) = freeInSeq (nrcSubGrid s (r,c))
+
 -- returns all free values for a given (r,c) by intersecting free values of row, column and subgrid
 freeAtPos :: Sudoku -> (Row,Column) -> [Value]
 freeAtPos s (r,c) = 
   (freeInRow s r) 
    `intersect` (freeInColumn s c) 
    `intersect` (freeInSubgrid s (r,c)) 
+   `intersect` (nrcFreeInSubgrid s (r,c))
 
 -- only unique elements?
 injective :: Eq a => [a] -> Bool
