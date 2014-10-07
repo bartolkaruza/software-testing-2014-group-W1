@@ -154,7 +154,12 @@ solveNrcSudoku r = do
 
 {- 5. See implementation in Week5.hs -}
 
-{- 6. The more values can be filled in for the minimal constraint at some point of the solving process the harder it is -}
+{- 6. The more values can be filled in for the minimal constraint at some point of the solving process the harder it is 
+
+    -- to create a simple hand solvable solution we need to only remove things that becomes a hidden single or naked single
+	-- to create a hard hand solvable solution we need to remove things that require harder techniques to be found
+
+
 
 removeHiddenSingle :: Node -> (Row,Column) -> Node
 removeHiddenSingle n (r,c) | length (snd (eraseN n (r,c))) == 1 = eraseN n (r,c)
@@ -179,3 +184,4 @@ simpleSudoku = do [r] <- rsolveNs [emptyN]
                   showNode r
                   s  <- genProblemSimple r
                   showNode s
+-}
