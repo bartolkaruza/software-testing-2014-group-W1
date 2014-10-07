@@ -7,44 +7,78 @@ import SS
 import Control.Exception (evaluate)
 import Test.Hspec
 
-
-{- 1. 
- Doing this by quickcheck would require us to be able to generate grids that
-   - specify a correct sudoku problem
-   - specify a correct sudoku answer
- This means grids that do not have duplicates in rows, columns and subgrids, which we can't accomplish using QuickCheck
--}
-start = hspec $ do
-           describe "SS" $ do
-               describe "rsolveNs" $ do 
-                   it "returns a node that contains no empty boxes" $ do
-                      [s] <- rsolveNs [emptyN]	 
-                      length (openPositions (fst s)) `shouldBe` 0
-
-                   it "returns a node that is consistent in that it contains no duplicates in rows, columns, subgrids" $ do
-                      [s] <- rsolveNs [emptyN]	 
-                      (consistent (fst s)) `shouldBe` True  
-
-               describe "genProblem" $ do
-                   it "returns a consistent sudoku" $ do
-                      [s] <- rsolveNs [emptyN]
-                      t <- genProblem s
-                      (consistent (fst t)) `shouldBe` True					  
-
-                   it "returns a problem with a unique solution" $ do
-                      [s] <- rsolveNs [emptyN]
-                      t <- genProblem s
-                      (uniqueSol t) `shouldBe` True	
-
-
-{- 2. We can test this by generating problems and removing every hint (one at a time) and see if it gives a unique solution
+{-
+	We could use QuickCheck to check the 'solving' part of the Sudoku Solver if can construct a Arbitrary function for generating sudokus. It is more difficult to check the generation of sudokus with quickhcheck, because we would have to check the Arbitrary function as well..
 -}
 
-testIsMinimal = do
-               [r] <- rsolveNs [emptyN]
-               s   <- genProblem r
-               return $ not (and $ [uniqueSol ((eraseS (fst s) (x,y)), constraints (eraseS (fst s) (x,y))) | x <- [1..9], y <- [1..9]])
+firstAssignment :: IO()
+firstAssignment = hspec $ do
+    describe "SS" $ do
+        describe "solveNs" $ do
+            it "should return a Node list with one or more nodes that contain no constraints, thus a solution for the given sudoku/grid" $ do
+                let solutions = solveNs (initNode example1) 
+                and (map isSolvedNode solutions) `shouldBe` True
+				
+        describe "genRandomSudoku" $ do
+            it "should generate a solved sudoku starting from a empty sudoku" $ do 
+                n <- genRandomSudoku
+                isSudoku n && isSolvedNode n `shouldBe` True
+				
+        describe "genProblem" $ do
+            it "returns a consistent sudoku" $ do
+                [s] <- rsolveNs [emptyN]
+                t <- genProblem s
+                (consistent (fst t)) `shouldBe` True					  
 
+            it "should generate a unsolved sudoku with an unique solution starting from a solved sudoku" $ do 
+                n <- genRandomSudoku
+                n' <- genProblem n
+                isSudoku n' && not(isSolvedNode n') && uniqueSol n' `shouldBe` True
+
+--main property for a sudoku				
+isSudoku :: Node -> Bool
+isSudoku n = isCorrectSize g && hasCorrectElems g
+		where g = sud2grid $ fst n
+
+--the grid is 9x9
+isCorrectSize :: Grid -> Bool
+isCorrectSize g = (length g == 9) && and (map (\r -> length r == 9) g)
+
+--all fields contain elements in the range 0..9
+hasCorrectElems :: Grid -> Bool
+hasCorrectElems g = and (map (\r -> and (map (\c -> elem c [0..9]) r)) g)
+
+--node is solved if it has no constraints and the sudoku is contains unique elements in every row, column and subgrid				
+isSolvedNode :: Node -> Bool
+isSolvedNode (s,[]) = consistent s
+isSolvedNode _ = False
+
+{-
+	Ex.2 minimal problems
+	1 hour
+-}
+
+-- be warned: checkMinimal on 10 cases takes +/- 1 minute
+checkMinimal :: Int -> IO()
+checkMinimal count = do 
+				n <- genRandomSudoku
+				p <- genProblem n
+				let r = isMinimal p
+				if r == True 
+				then 
+					if count > 0
+					then print $ isMinimal p
+					else checkMinimal (count-1)
+				else print r
+				
+isMinimal :: Node -> Bool
+isMinimal n = uniqueSol n && not (uniqueSol $ removeHint n)
+
+--remove the first hint from the sudoku
+removeHint :: Node -> Node
+removeHint n = eraseN n (hints!!0)
+					 where hints = filledPositions $ fst n
+					 
 {- 3. Create a problem, then remove all blocks and put them as children in the tree (like solving). Then 
       do a depth first search to find the one with the most empty blocks. Minimalize this one.
 	  
