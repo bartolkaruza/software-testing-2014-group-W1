@@ -19,21 +19,50 @@ main :: IO()
 main = hspec $ do
 	describe "SS" $ do
 		describe "solveNs" $ do
-			it "should return a Node list with one or more nodes that contain no constraints, thus a solution for the given sudoku/grid" $ do
+			it "should return a Node list with one or more nodes that have sudokus without constraints or empty boxes, thus a solution for the given sudoku/grid" $ do
 				let solutions = solveNs (initNode example1) 
-				and (map isSolvedNode solutions) `shouldBe` True
+				and (map (\n -> snd n == [] && (length $ openPositions $ fst n) == 0) solutions) `shouldBe` True
 				
 		describe "genRandomSudoku" $ do
-			it "should generate a solved sudoku starting from a empty sudoku" $ do 
+			it "returns a node containing a sudoku" $ do 
 				n <- genRandomSudoku
-				isSudoku n && isSolvedNode n `shouldBe` True
+				isSudoku n `shouldBe` True
+			
+			it "returns a node that contains no empty boxes" $ do
+			    [s] <- rsolveNs [emptyN]     
+			    length (openPositions (fst s)) `shouldBe` 0
+		
+			it "returns a node containing a solved sudoku, without constraints" $ do 
+				n <- genRandomSudoku
+				(snd n) == [] `shouldBe` True
+				 
+			it "returns a node that contains a consistent sudoku in that it contains no duplicates in rows, columns, subgrids" $ do
+				n <- genRandomSudoku
+				consistent (fst n) `shouldBe` True
+
 				
 		describe "genProblem" $ do
-			it "should generate a unsolved sudoku with an unique solution starting from a solved sudoku" $ do 
+			it "returns a sudoku" $ do 
 				n <- genRandomSudoku
 				n' <- genProblem n
-				isSudoku n' && not(isSolvedNode n') && uniqueSol n' `shouldBe` True
+				isSudoku n' `shouldBe` True
+			
+			it "returns a node that contains more than 1 empty box" $ do
+				n <- genRandomSudoku
+				n' <- genProblem n
+				length (openPositions (fst n')) > 0 `shouldBe` True
+			   
+			it "returns an unsolved sudoku, with constraints" $ do
+				n <- genRandomSudoku
+				n' <- genProblem n
+				(snd n') /= [] `shouldBe` True 
+			   
+			it "returns a problem with a unique solution" $ do
+				n <- genRandomSudoku
+				n' <- genProblem n
+				(uniqueSol n') `shouldBe` True    
 
+				
 --main property for a sudoku				
 isSudoku :: Node -> Bool
 isSudoku n = isCorrectSize g && hasCorrectElems g
@@ -46,11 +75,6 @@ isCorrectSize g = (length g == 9) && and (map (\r -> length r == 9) g)
 --all fields contain elements in the range 0..9
 hasCorrectElems :: Grid -> Bool
 hasCorrectElems g = and (map (\r -> and (map (\c -> elem c [0..9]) r)) g)
-
---node is solved if it has no constraints and the sudoku is contains unique elements in every row, column and subgrid				
-isSolvedNode :: Node -> Bool
-isSolvedNode (s,[]) = consistent s
-isSolvedNode _ = False
 
 {-
 	Ex.2 minimal problems
