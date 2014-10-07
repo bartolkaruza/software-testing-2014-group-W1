@@ -373,6 +373,8 @@ filledPositions s =
   [ (r,c) | r <- positions,  
             c <- positions, s (r,c) /= 0 ]
 
+		
+			
 -- removes random items one by one until it is a minimum solution
 genProblem :: Node -> IO Node
 genProblem n = do ys <- randomize xs

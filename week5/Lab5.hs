@@ -53,9 +53,31 @@ testIsMinimal = do
 	 - when blocks on one column, the internal columns are interchangable
 	 - when two blocks on a row or on a column are empty, the blocks are not necessarily interchangable
 -}
-eraseB :: Sudoku -> (Row,Column) -> Sudoku
-eraseB s (r,c) = eraseS s (r,c)
 
+-- gets a list with filled positions
+filledBlocks :: Sudoku -> [(Row,Column)]
+filledBlocks s = 
+  [ (r,c) | r <- [1..9],  
+            c <- [1..9], maximum (subGrid s (r,c)) /= 0 ]	
+			
+minimalizeB :: Node -> [(Row,Column)] -> Node
+minimalizeB n ((r,c):rcs) | length (freeInSubgrid (fst (minimalize n sg)) $ head sg) == 9 = (minimalize n sg)
+                          | otherwise = minimalizeB n rcs
+                           where sg = [(r',c') | r'<- bl r, c' <- bl c]
+
+						   
+-- removes random items one by one until it is a minimum solution
+genProblem3B :: Node -> Int -> IO Node
+genProblem3B n x = if x == 0 then return n
+                   else
+                       do ys <- randomize xs
+                          (genProblem3B (minimalizeB n ys) (x-1))
+                       where xs = filledBlocks (fst n)
+test :: IO ()
+test = do [r] <- rsolveNs [emptyN]
+          showNode r
+          s <- genProblem3B r 3
+          showNode s
 {- 4. This means adding a constraint which where the blocks' are injective 
       I have implemented this in the file Week5-exercises.hs. 
 	  precondition for every sudoku:
