@@ -6,13 +6,21 @@ import Week5
 import SS
 import Control.Exception (evaluate)
 import Test.Hspec
+{- You can call all the assignments using: -}
+doAll = do
+           assignment1
+           assignment2 100 -- number of tests to perform
+           assignment3 3   -- number of blocks to leave empty
+           assignment4
+           assignment5 
+
 
 {-
 	We could use QuickCheck to check the 'solving' part of the Sudoku Solver if can construct a Arbitrary function for generating sudokus. It is more difficult to check the generation of sudokus with quickhcheck, because we would have to check the Arbitrary function as well..
 -}
 
-firstAssignment :: IO()
-firstAssignment = hspec $ do
+assignment1 :: IO()
+assignment1 = hspec $ do
     describe "SS" $ do
         describe "solveNs" $ do
             it "should return a Node list with one or more nodes that contain no constraints, thus a solution for the given sudoku/grid" $ do
@@ -59,8 +67,8 @@ isSolvedNode _ = False
 -}
 
 -- be warned: checkMinimal on 10 cases takes +/- 1 minute
-checkMinimal :: Int -> IO()
-checkMinimal count = do 
+assignment2 :: Int -> IO()
+assignment2 count = do 
 				n <- genRandomSudoku
 				p <- genProblem n
 				let r = isMinimal p
@@ -68,7 +76,7 @@ checkMinimal count = do
 				then 
 					if count > 0
 					then print $ isMinimal p
-					else checkMinimal (count-1)
+					else assignment2 (count-1)
 				else print r
 				
 isMinimal :: Node -> Bool
@@ -88,7 +96,9 @@ removeHint n = eraseN n (hints!!0)
 	 - when two blocks on a row or on a column are empty, the blocks are not necessarily interchangable
 	 
 	 In 4 blocks it is dependent on the other blocks. As there are now two blocks empty in at least two columns, it could well be
-	 that there are no problems that give a unique solution.
+	 that there are no problems that give a unique solution. For instance when the left 3 subgrids are the right 3 subgrids but flipped
+	 
+	 In 5 blocks it is impossible, since it is either 3 in a row or the one in the middle and the corners. These would be interchangable.
 -}
 
 -- gets a list with filled positions
@@ -110,11 +120,11 @@ genProblem3B n x = if x == 0 then return n
                        do ys <- randomize xs
                           (genProblem3B (minimalizeB n ys) (x-1))
                        where xs = filledBlocks (fst n)
-test :: IO ()
-test = do [r] <- rsolveNs [emptyN]
-          showNode r
-          s <- genProblem3B r 3
-          showNode s
+assignment3 :: Int -> IO ()
+assignment3 n = do [r] <- rsolveNs [emptyN]
+                   showNode r
+                   s <- genProblem3B r n
+                   showNode s
 {- 4. This means adding a constraint which where the blocks' are injective 
       I have implemented this in the file Week5.hs. 
 	  precondition for every sudoku:
@@ -137,9 +147,12 @@ nrcSudoku = [[0,0,0,3,0,0,0,0,0],
              [0,0,2,0,0,0,0,0,0]]
 
 			 
-solveNrcSudoku r = do
-                    [t] <- rsolveNs' [((grid2sud r), constraints (grid2sud r))]	
-                    showNode' t					
+assignment4 = do
+                print "This is the NRC sudoku:"
+                showSudoku' (grid2sud nrcSudoku)
+                print "Solving this leads to:"
+                [t] <- rsolveNs' [((grid2sud nrcSudoku), constraints (grid2sud nrcSudoku))]	
+                showNode' t					
 {- Solution to NRC Sudoku:
    [[4,7,8,3,9,2,6,1,5],
     [6,1,9,7,5,8,3,2,4],
@@ -153,6 +166,8 @@ solveNrcSudoku r = do
 -}
 
 {- 5. See implementation in Week5.hs -}
+
+assignment5 = main'
 
 {- 6. The more values can be filled in for the minimal constraint at some point of the solving process the harder it is 
 
