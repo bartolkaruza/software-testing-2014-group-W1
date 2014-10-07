@@ -67,17 +67,47 @@ nextPosition s = head $ filledPositions s
 
 {- 3. Sudoku with three empty blocks (i.e. the default blocks, not any subgrid)
 
+  2.0 hrs
+
 -}
 
-genEmptyBlockProblem n = showNode (minimalize n (block1 ++ block2 ++ block3 ++ block4 ++ xs)) 
+sortGT (a1, b1) (a2, b2)
+  | a1 < a2 = LT
+  | a1 > a2 = GT
+  | a1 == a2 = EQ
+
+-- least filled block, gives [(score, pos)] (WITHOUT ZERO LENGTH)
+leastfilled :: Node -> [(Int, (Row, Column))]
+leastfilled n = filter (\(x,y) -> x > 0) [ ((length $ freeInSubgrid (fst n) (i,j)) , (i,j)) | i <- [1,4,7], j <- [1,4,7] ]
+
+-- (score, pos) to [(pos)]
+extract :: (Int, (Int, Int)) -> [(Row, Column)]
+extract (a,(b,c)) = [(i,j) | i <- bl b, j <- bl c]
+
+-- gives 'best' block and picks pos
+bestBlock :: Node -> [(Row,Column)]
+bestBlock n = extract (head $ sortBy sortGT (leastfilled n))
+
+-- when minimalize' cant continue, find block that has the least filled
+-- it fails here, infinite loop
+rethink :: Node -> [(Row,Column)] -> [(Row,Column)]
+rethink n s | uniqueSol j' = s --(bestBlock n) ++ s
+            | otherwise = []
+            where j' = eraseN n (head $ bestBlock n)
+
+minimalize' :: Node -> [(Row,Column)] -> Node
+minimalize' n [] = n
+minimalize' n ((r,c):rcs) 
+   | uniqueSol n' = minimalize' n' rcs
+   | otherwise    = minimalize' n  (rethink n rcs)
+   where n' = eraseN n (r,c)
+
+genEmptyBlockProblem n = showNode (minimalize' n (block1 ++ xs)) 
                          where xs = filledPositions (fst n)
 
--- needs randomizer
 block1 = [ (i,j) | i <- [1..3], j <- [1..3] ]
-block2 = [ (i,j) | i <- [7..9], j <- [7..9] ]
-block3 = [ (i,j) | i <- [7..9], j <- [4..7] ]
-block4 = [ (i,j) | i <- [4..7], j <- [7..9] ]
 
+randomEmpty = genRandomSudoku >>= genEmptyBlockProblem
 
 {- 4. Sudoku generator with extra constraints: subgrid injectivity:
     (left top) (2,2) (2,6) (6,2) (6,6)
@@ -88,6 +118,8 @@ block4 = [ (i,j) | i <- [4..7], j <- [7..9] ]
 
     4. modify rest of helper functions to solve
 
+    2.0 hrs
+
 -}
 
 subgridC :: Sudoku -> (Row,Column) -> [Value]
@@ -97,6 +129,16 @@ subgridC s (r,c) =
 subgridInjectiveC :: Sudoku -> (Row,Column) -> Bool
 subgridInjectiveC s (r,c) = injective vs where 
    vs = filter (/= 0) (subgridC s (r,c))
+
+freeInSubgridC :: Sudoku -> (Row,Column) -> [Value]
+freeInSubgridC s (r,c) = freeInSeq (subgridC s (r,c))
+
+freeAtPosC :: Sudoku -> (Row,Column) -> [Value]
+freeAtPosC s (r,c) = 
+  (freeInRow s r) 
+   `intersect` (freeInColumn s c) 
+   `intersect` (freeInSubgrid s (r,c)) 
+   `intersect` (freeInSubgridC s (r,c)) 
 
 consistentC :: Sudoku -> Bool
 consistentC s = and $
@@ -132,10 +174,15 @@ sameblockC :: (Row,Column) -> (Row,Column) -> Bool
 sameblockC (r,c) (x,y) = blC r == blC x && blC c == blC y 
 
 extendNodeC :: Node -> Constraint -> [Node]
-extendNodeC (s,constraints) (r,c,vs) = 
+extendNodeC (s,constraintsC) (r,c,vs) = 
    [(extend s ((r,c),v),
      sortBy length3rd $ 
-         pruneC (r,c,v) constraints) | v <- vs ]
+         pruneC (r,c,v) constraintsC) | v <- vs ]
+
+constraintsC :: Sudoku -> [Constraint] 
+constraintsC s = sortBy length3rd 
+    [(r,c, freeAtPosC s (r,c)) | 
+                       (r,c) <- openPositions s ]
 
 succNodeC :: Node -> [Node]
 succNodeC (s,[]) = []
@@ -144,7 +191,7 @@ succNodeC (s,p:ps) = extendNodeC (s,ps) p
 initNodeC :: Grid -> [Node] 
 initNodeC gr = let s = grid2sud gr in 
                if (not . consistentC) s then [] 
-               else [(s, constraints s)]
+               else [(s, constraintsC s)]
 
 solveAndShowC :: Grid -> IO()
 solveAndShowC gr = solveShowNsC (initNodeC gr)
@@ -166,7 +213,7 @@ nrcExample1 =  [[0,0,0,3,0,0,0,0,0],
                 [0,8,0,0,4,0,0,0,0],
                 [0,0,2,0,0,0,0,0,0]]
 
-{- 5. Generator of 'NRC' Sudoku 
+{- 5. Generator of 'NRC' Sudoku  - 0.5hrs
 
     1. Convert the random-functions (r-) to work with (-C) functions.
 
