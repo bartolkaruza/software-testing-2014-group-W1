@@ -66,9 +66,20 @@ fct_gcd a b =
 expM ::  Integer -> Integer -> Integer -> Integer
 expM x y = rem (x^y)
 
+{-
+	the modular multiplication rule "(A * B) mod C = (A mod C * B mod C) mod C" is applied last if-then-else using the base field, which holds A mod C (since A == B)
+	
+-}
 exM :: Integer -> Integer -> Integer -> Integer
-exM = expM -- to be replaced by a fast version
-
+exM b exp m = if exp == 0
+			  then 1
+			  else if exp == 1 
+				   then b'
+				   else if exp `mod` 2 == 0
+					    then exM (b'^2 `mod` m) (exp `div` 2) m
+					    else (b' * (exM b' (exp-1) m)) `mod` m
+	          where b' = b `mod` m
+			
 prime_test_F :: Integer -> IO Bool
 prime_test_F n = do 
    a <- randomRIO (1, n-1) :: IO Integer
@@ -78,8 +89,8 @@ primeF :: Int -> Integer -> IO Bool
 primeF _ 2 = return True
 primeF 0 _ = return True
 primeF k n = do
---   a <- randomRIO (1, n-1) :: IO Integer
-   a <- randomRIO (1, n-2) :: IO Integer
+   a <- randomRIO (1, n-1) :: IO Integer
+--   a <- randomRIO (1, n-2) :: IO Integer
    if (exM a (n-1) n /= 1) 
       then return False 
       else primeF (k-1) n
