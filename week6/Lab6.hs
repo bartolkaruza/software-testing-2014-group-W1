@@ -2,11 +2,9 @@ module Lab6
 
 where
 import Data.List
-import Data.Array.IO
-import Control.Monad
 import System.Random
-import Test.QuickCheck
-import Test.QuickCheck.Monadic
+--import Test.QuickCheck
+--import Test.QuickCheck.Monadic
 --import Criterion.Main
 import Week6
 
