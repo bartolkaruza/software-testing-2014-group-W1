@@ -2,6 +2,8 @@ module Lab6
 
 where
 import Data.List
+import Data.Array.IO
+import Control.Monad
 import System.Random
 import Test.QuickCheck
 import Test.QuickCheck.Monadic
@@ -15,12 +17,12 @@ carmichael = [ (6*k+1)*(12*k+1)*(18*k+1) |
       isPrime (12*k+1), 
       isPrime (18*k+1) ]
 
-{-
+{-	===============================
 	Ex.1 Fast Modular Exponentiation
 	See function 'exM' in Week6.hs
 -}
 	  
-{-
+{-	========================================
 	Ex.2 Testing Fast Modular Exponentiation
 	
 	Using Criterion for benchmarking (cannot run criterion on windows 8, due to mingw 32 linking issues)
@@ -33,19 +35,19 @@ main = defaultMain [
 		]
 	-}	
 
-{- 
+{-  ================================
 	Ex.3 composite number generation
 -}
 
---composites start at |4|
 composites = filter (\x -> not $ isPrime x) [4..]
 
-{-
-	Ex.4 testing Fermat
--}
 
--- Increasing k results in a larger chance of finding a correct positive in primeF. So, when we increase k, the size of the 'prime' we find is usually larger than with a lower k.
--- There is always a chance to find the least composite: 4
+{-	===========
+	Ex.4 Fermat
+	
+	Increasing k results in a larger chance of finding a correct positive in primeF. So, when we increase k, the size of the 'prime' we find is usually larger than with a lower k.
+	There is always a chance to find the least composite: 4
+-}
 
 -- return first encountered composite which is a prime according to primeF
 testF :: Int -> IO Integer
@@ -58,19 +60,23 @@ findPrimeF k (c:cs) = do
 					  then return c
 					  else findPrimeF k cs
 
+					  
 -- test first 10000 lookups in the composite list on primeF method and 
 -- print those who primeF indicates to be a prime
 testComps :: Int -> IO()
-testComps k = testList 0 10000 k composites []
-						
-testList :: Int -> Int -> Int -> [Integer] -> [Integer] -> IO()
-testList n max k xs ps = if n == max
-					     then print $ reverse ps
+testComps k = printList $ getListF 0 10000 k composites []
+
+printList :: IO [Integer] -> IO()
+printList xs = xs >>= print
+									
+getListF :: Int -> Int -> Int -> [Integer] -> [Integer] -> IO [Integer]
+getListF n max k xs ps = if n == max
+					     then return $ reverse ps
 					     else do 
 							  isP <- primeF k (xs!!n)
 							  if isP
-							  then testList (n+1) max k xs ((xs!!n):ps)
-							  else testList (n+1) max k xs ps		
+							  then getListF (n+1) max k xs ((xs!!n):ps)
+							  else getListF (n+1) max k xs ps			
 
 {- increasing k, results in a lesser chance of finding false positives, for example:  
 	
@@ -82,26 +88,25 @@ testComps 2
 
 testComps 3
 [6601,8911,10585]
-
 -}
 
 							  
 -- test 10000 random lookups in the composite list on primeF method and 
 -- print those who primeF indicates to be a prime
 testRndComps :: Int -> Int -> IO()
-testRndComps max k = testRndList 10000 max k composites []
+testRndComps max k = printList $ getRndListF 10000 max k composites []
 							  
-testRndList :: Int -> Int -> Int -> [Integer] -> [Integer] -> IO()
-testRndList 0 max k xs ps = print $ reverse ps
-testRndList n max k xs ps =  do 
-							 r <- randomRIO (0, max)
-							 isP <- primeF k (xs!!r)
+getRndListF :: Int -> Int -> Int -> [Integer] -> [Integer] -> IO [Integer]
+getRndListF 0 max k xs ps = return $ reverse ps
+getRndListF n max k xs ps =  do 
+							 idx <- randomRIO (0, max)
+							 isP <- primeF k (xs!!idx)
 							 if isP
-							 then testRndList (n-1) max k xs ((xs!!r):ps)
-							 else testRndList (n-1) max k xs ps
+							 then getRndListF (n-1) max k xs ((xs!!idx):ps)
+							 else getRndListF (n-1) max k xs ps
 
 {-
-	The same applies for randomly picked composites 
+	The same applies for randomly picked composites:
 	
 	*Lab6> testRndComps 10000 1 	[10011,3245,2465,6697,7345,153,1267,1876,6281,1027,248,2896,1921,5713,4123,3605,10735,10585,2465,21,38,152,7449,165,8911,7345,1027,65,361,9191,6925,11305,2465,93,49,6532,11145,671,6601,8911,7865,12,4233,4636,4961,903,9073,1105,95,3277,831,5617,9889,590,65,3059,10309,1729,561,3309,87,483,123,4081]
 	*Lab6> testRndComps 10000 2 
@@ -119,8 +124,10 @@ qcFindPrimes idx = monadicIO $ do
 		isP <- run $ primeF 10 (composites!!(abs idx))
 		assert $ not isP
 -}
-						
-{-
+	
+
+	
+{-	===============
 	Ex.5 Carmicheal
 	
 	Fermat's little theorem: 
@@ -132,9 +139,161 @@ qcFindPrimes idx = monadicIO $ do
 	These numbers are composites with the same property of modular arithmetic congruence on which Fermat's little theorem is based. Therefore, they should always trigger a false positive when using primeF
 -}
 
+--show list of primes in carmichaeal list using Fermat
+testCarmF :: Int -> IO()
+testCarmF k = printList $ getListF 0 100 k carmichael []
+
+-- usually: returns the first of carmichaels list (294409)
+-- but testF' 20 can result in 56052361 (2nd carmichael), disproving my assumption that these numbers are always treated as false positives by Fermat
 testF' :: Int -> IO Integer
 testF' k = findPrimeF k carmichael
 
---always returns the same list of numbers
-testCarm :: Int -> IO()
-testCarm k = testList 0 100 k carmichael []
+-- match 100 found false positives with first 100 carmichael numbers
+compareCarmF :: Int -> IO()
+compareCarmF k = do 
+				 cms <- getListF 0 100 k carmichael []
+				 print $ cms == (take 100 carmichael)
+				 
+{-
+	*Lab6> compareCarm 3
+	True
+	*Lab6> compareCarm 10	
+	False	<-- ?
+	*Lab6> compareCarm 10	
+	True	<-- ?
+-}
+
+{-
+	================
+	Ex.6 Miller-Rabin
+-}
+
+getListMR :: Int -> Int -> Int -> [Integer] -> [Integer] -> IO [Integer]
+getListMR n max k xs ps = if n == max
+					      then return $ reverse ps
+					      else do 
+							   isP <- primeMR k (xs!!n)
+							   if isP
+							   then getListMR (n+1) max k xs ((xs!!n):ps)
+							   else getListMR (n+1) max k xs ps
+							   
+-- execute MR method with 100 random k's (with range min-1000) on carmicheal
+testCarmMR :: Int -> IO()
+testCarmMR min = testCarmMR' 100 min
+
+testCarmMR' :: Int -> Int -> IO()
+testCarmMR' 0 min = print True
+testCarmMR' n min = do
+				rnd <- randomRIO (min, 1000)
+				cms <- getListMR 0 100 rnd carmichael []
+				if cms == []
+				then testCarmMR' (n-1) min
+				else print ("for k: " ++ (show rnd) ++ ", these primes were found: " ++ (show cms))
+
+{-
+	For small k's  Miller Rabin still reports primes on carmicheal numbers
+	
+	*Lab6> testCarmMR 3
+	"for k: 3, these primes were found: [2301745249]"
+	*Lab6> testCarmMR 1
+	"for k: 1, these primes were found: [172947529,2724933935809,11765530852489,21873528379441,22027380041449,30833142247729,35700127755121,37686301288201,57060521336809,81159260227849,221568419989801]"
+	*Lab6> testCarmMR 10
+	True
+-}			
+
+{- 
+	Ex.7 Mersenne
+-}
+
+findM :: Int -> IO()
+findM n = printList $ findM' n primes []
+
+findM' :: Int -> [Integer] -> [Integer] -> IO [Integer]
+findM' 0 ps ms = return $ reverse ms
+findM' n (p:ps) ms = do
+						isM <- primeMR 10 p'
+						if isM
+						then findM' (n-1) ps (p':ms)
+						else findM' n ps ms
+						where p' = (2^p - 1)
+
+{-
+	*Lab6> findM 10	[3,7,31,127,8191,131071,524287,2147483647,2305843009213693951,618970019642690137449562111]
+-}
+
+
+{- 
+	Ex.8 RSA
+	
+	unfortunately cannot use IO Bool of primeMR in list comprehension:
+	findPairs :: [(Integer, Integer)]
+	findPairs = [(x,y) | x <- [10000..12000], y <- [10000..12000], 
+						x /= y,
+						isPrime x, 
+						isPrime y, 
+						getBits x == getBits y]
+						
+	getBits :: Integer -> Integer
+	getBits x = floor $ logBase 2 (fromIntegral x) + 1
+-}
+
+-- find random pair of primes for given bit-length
+findPair :: Int -> IO()
+findPair bits = do 
+					x <- fst pair
+					y <- snd pair
+					print $ (x,y)
+					where pair = findPair' bits
+
+findPair' :: Int -> (IO Integer, IO Integer)
+findPair' bits = (x,y)
+					where min = 2^(bits-1); 
+						  max = (2^bits)-1;
+						  xs = take 1000 [min..max]; --just take 1000 elements, for larger bit-lengths the list becomes too big
+						  x = findPrimeInList xs (return 0);
+						  y = findPrimeInList xs x;				  
+
+-- we need the second parameter to filter the first prime (if it should accidentally be found)
+findPrimeInList :: [Integer] -> IO Integer -> IO Integer
+findPrimeInList xs y = do
+					r <- randomRIO (0, length xs - 1)
+					x <- return (xs!!r)
+					p <- primeMR 10 (xs!!r)
+					y' <- y
+					if p && x /= y'
+					then return x
+					else findPrimeInList (delete x xs) y
+
+-- show rsa encryption/decryption of message msg with bit-length b
+rsaTest :: Int -> Integer -> IO()
+rsaTest b msg = do  
+				p' <- p
+				q' <- q
+				pr <- return $ rsa_private p' q'
+				pu <- return $ rsa_public p' q'
+				enc <- return $ rsa_encode pr msg
+				dec <- return $ rsa_decode pu enc
+				print $ ("message: " ++ show msg)
+				print $ ("primes: " ++ show p' ++ " and " ++ show q')
+				print "--------------------------------"
+				print $ ("pr_key: " ++ show pr)
+				print $ ("pub_key: " ++ show pu)
+				print "--------------------------------"
+				print $ ("encode message with private: " ++ show enc)
+				print $ ("decode encoded message with public: " ++ show dec)
+				where 	pq = findPair' b;
+						p = fst pq;
+						q = snd pq				
+						
+{-
+	64-bit encryption: 
+	
+	"message: 1234"
+	"primes: 9223372036854776561 and 9223372036854776351"
+	"--------------------------------"
+	"pr_key: (56713727820156418533924711698681570667,85070591730234627819333811621731908911)"
+	"pub_key: (3,85070591730234627819333811621731908911)"
+	"--------------------------------"
+	"encode message with private: 51322416876448132951161862689172134529"
+	"decode encoded message with public: 1234"
+-}

@@ -67,17 +67,15 @@ expM ::  Integer -> Integer -> Integer -> Integer
 expM x y = rem (x^y)
 
 {-
-	the modular multiplication rule "(A * B) mod C = (A mod C * B mod C) mod C" is applied last if-then-else using the base field, which holds A mod C (since A == B)
+	the modular multiplication rule "(A * B) mod C = (A mod C * B mod C) mod C" is applied in the if-then-else using the b' field, which holds A mod C (since A == B)
 	
 -}
 exM :: Integer -> Integer -> Integer -> Integer
-exM b exp m = if exp == 0
-			  then 1
-			  else if exp == 1 
-				   then b'
-				   else if exp `mod` 2 == 0
-					    then exM (b'^2 `mod` m) (exp `div` 2) m
-					    else (b' * (exM b' (exp-1) m)) `mod` m
+exM b 0 m = 1
+exM b 1 m = b `mod` m
+exM b exp m = if exp `mod` 2 == 0
+			  then exM (b'^2 `mod` m) (exp `div` 2) m
+			  else (b' * (exM b' (exp-1) m)) `mod` m
 	          where b' = b `mod` m
 			
 prime_test_F :: Integer -> IO Bool
