@@ -11,19 +11,29 @@ module Lab6 where
           isPrime (12*k+1), 
           isPrime (18*k+1) ]
 
-    -- Simple recursive exM' which does not use double exponentiation
-    -- but does improve performance
+    
     exM' :: Integer -> Integer -> Integer -> Integer
     exM' _ 0 _ = 1
     exM' x 1 z = mod x z
     exM' x y z = mod (x * (exM' x (y-1) z)) z
 
+    exM'' :: Integer -> Integer -> Integer -> Integer
+    exM'' x y z | n == z = rem (x^y) z
+                | otherwise = (exMuP x n z) * (rem (x^(y-n)) z)
+                    where n = exponentOf2 y
+
+    exMuP :: Integer -> Integer -> Integer -> Integer
+    exMuP x 2 z = (rem x z)^2
+    exMuP x y z = (exMuP x (exponentOf2 (y-1)) z)^2
+
+    exponentOf2 x = last $ takeWhile (\y -> x >= y) [2^x | x <- [1..]]
     -- exM'' :: Integer -> Integer -> Integer -> Integer
     -- exM'' x y z 
     --     | isEven y = 
 
     -- exMuP :: Integer -> Integer -> Integer -> Integer -> Integer
-    -- exMUp x y z g | y == g =  
+    -- exMUp x y z g | y == g = x
+    --     | otherwise exMUp (rem (x^y)) z g
 
     isEven :: Integer -> Bool
     isEven x = rem x 2 == 0
