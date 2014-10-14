@@ -52,7 +52,7 @@ composites = filter (\x -> not $ isPrime x) [4..]
 	Ex.4 Fermat
 	
 	Increasing k results in a larger chance of finding a correct positive in primeF. So, when we increase k, the size of the 'prime' we find is usually larger than with a lower k.
-	There is always a chance to find the least composite: 4
+	However, there is always a chance to find the least composite number: 4
 -}
 
 -- return first encountered composite which is a prime according to primeF
