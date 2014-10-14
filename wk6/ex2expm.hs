@@ -2,11 +2,12 @@ module Main
 
 
 where
---import Criterion.Main
 import Week6
 
--- criterion fails to install.
+-- performance test for ex. 2 by running linux 'time'
+-- used in stead of Criterion
 
+-- expM test
 
 main = do
     testM 10000000
@@ -27,15 +28,3 @@ testM i = if i == 0
          else do
                 someTest
                 testM (i-1)
-
-
-{-
-main = defaultMain [
-    bgroup "exM" [ bench "2 3 5"  $ whnf exM 2 3 5
-               , bench "2 16 6"  $ whnf exM 2 16 6
-               , bench "2 1024 5"  $ whnf exM 2 1024 5
-               , bench "31 4095 5" $ whnf exM 31 4095 5
-               ]
-    ]
-
--}
