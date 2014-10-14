@@ -6,6 +6,7 @@ import System.Random
 import Week6
 import Test.QuickCheck
 import Test.QuickCheck.Monadic
+import Control.Monad
 
 carmichael :: [Integer]
 carmichael = [ (6*k+1)*(12*k+1)*(18*k+1) | 
@@ -34,8 +35,12 @@ primeTest_MR ::Integer -> IO Bool
 primeTest_MR n = do 
    a <- randomRIO (1, n-1) :: IO Integer
    (primeMR (fromIntegral a) (n-1))
+ 
+filterPrimeF :: [Integer] -> IO ()
+filterPrimeF xs = do t <- filterM (\x -> prime_test_F x) xs
+                     print t
   
-
+  
 getPrimeTestF x |  x == 0 = getPrimeTestF 1
                 | otherwise = monadicIO $ do 
                                   t <- run $ ((primeTest_F (composites !! (abs x))))
