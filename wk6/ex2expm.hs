@@ -9,8 +9,25 @@ import Week6
 
 
 main = do
-    print $ exM 31 4095 5
-    print $ exM 2 4095 5
+    testM 10000000
+
+testToIO a =
+    return ()
+
+someTest = do
+    testToIO $ (expM 2 16 6)
+    testToIO $ (expM 2 1024 5)
+    testToIO $ (expM 31 4095 5)
+    testToIO $ (expM 128 4095 5)
+    testToIO $ (expM 2047 4095 5)
+
+
+testM i = if i == 0 
+         then print "Done"
+         else do
+                someTest
+                testM (i-1)
+
 
 {-
 main = defaultMain [
