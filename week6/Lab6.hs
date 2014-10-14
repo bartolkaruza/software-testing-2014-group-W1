@@ -14,21 +14,13 @@ carmichael = [ (6*k+1)*(12*k+1)*(18*k+1) |
       isPrime (6*k+1), 
       isPrime (12*k+1), 
       isPrime (18*k+1) ]
-
-powerMod :: Int -> Int -> Int -> Int
-powerMod x 0 m = 1 
-powerMod x n m | even n =  (mod (powerMod x (n `div` 2) m) m) * (mod (powerMod x (n `div` 2) m) m)
-               | odd n  =  (powerMod x (n-1) m) * (mod x m) 
 			   
 composites :: [Integer]
 composites = (take 1000 [2..]) \\ (take 1000 primes)
 
-checkPrimeF = quickCheck getPrimeTestF
-
 primeTest_F :: Integer  -> IO Bool
 primeTest_F n = do 
    a <- randomRIO (1, n-1) :: IO Integer
-   print a
    (primeF (fromIntegral a) (n-1))
 
 primeTest_MR ::Integer -> IO Bool
@@ -36,11 +28,29 @@ primeTest_MR n = do
    a <- randomRIO (1, n-1) :: IO Integer
    (primeMR (fromIntegral a) (n-1))
  
-filterPrimeF :: [Integer] -> IO ()
-filterPrimeF xs = do t <- filterM (\x -> prime_test_F x) xs
-                     print t
+-- testF 1 = 4
+-- testF 2 = 4
+-- testF 3 = 4
+-- the higher k, the lower the chance that the test lets the composite number slip. But it still lets it slip sometimes
+testF :: Int -> IO ()
+testF k = do t <- filterM (\x -> primeF k x) composites
+             print t
   
-  
+testCM :: Int -> IO ()
+testCM k = do t <- filterM (\x -> primeF k x) (take 5 carmichael)
+              print t
+
+testCM :: Int -> IO ()
+testCM k = do t <- filterM (\x -> primeMR k x) (take 5 carmichael)
+              print t
+
+
+-- mersenne primes are of the form 2^n - 1			  
+findMR :: Int -> IO ()
+findMR k = do t <- filterM (\p -> primeMR k (2^p - 1)) (take 10 primes)
+              print $ map (\p -> 2^p - 1) t		  
+
+{-		QUICKCHECK VARIANT (gets only index of failure)	  
 getPrimeTestF x |  x == 0 = getPrimeTestF 1
                 | otherwise = monadicIO $ do 
                                   t <- run $ ((primeTest_F (composites !! (abs x))))
@@ -54,4 +64,5 @@ getPrimeTestCM x | x == 0 = getPrimeTestCM 1
 getPrimeTestMR x | x == 0 = getPrimeTestMR 1
                  | otherwise =  monadicIO $ do t <- run $ (primeTest_MR (carmichael !! (abs x))) 
                                                assert $ not t 
+-}
 -- hier een a kiezen met 1 < a < N waarbij N prime en die invullen als eerste argument voor primeF
