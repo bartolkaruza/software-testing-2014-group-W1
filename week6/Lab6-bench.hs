@@ -11,7 +11,7 @@ module Main where
     exponent2 = 3000
     modValue2 = 20
     base3 = 3
-    exponent3 = 67108864
+    exponent3 = 67108895
     modValue3 = 2048
 
 
@@ -26,8 +26,8 @@ module Main where
                 , bench "exM 10,3000,20" $ whnf (exM base2 exponent2) modValue2
                 ],
             bgroup "huge exponent" [ 
-                  bench "expM 3,67108864,2048" $ whnf (expM base3 exponent3) modValue3
-                , bench "exM 3,67108864,2048" $ whnf (exM base3 exponent3) modValue3
+                  bench "expM 3,67108895,2048" $ whnf (expM base3 exponent3) modValue3
+                , bench "exM 3,67108895,2048" $ whnf (exM base3 exponent3) modValue3
                 ]
             ]
 
@@ -39,5 +39,5 @@ module Main where
         print $ ("f1 10 3000 20: " ++ show (f1 base2 exponent2 modValue2))
         print $ ("f2 10 3000 20: " ++ show (f2 base2 exponent2 modValue2))
         print "--------------------------"
-        print $ ("f1 323 67108864 1024: " ++ show (f1 base3 exponent3 modValue3))
-        print $ ("f2 323 67108864 1024: " ++ show (f2 base3 exponent3 modValue3))
+        print $ ("f1 323 67108895 1024: " ++ show (f1 base3 exponent3 modValue3))
+        print $ ("f2 323 67108895 1024: " ++ show (f2 base3 exponent3 modValue3))

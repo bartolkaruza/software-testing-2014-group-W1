@@ -17,48 +17,15 @@ carmichael = [ (6*k+1)*(12*k+1)*(18*k+1) |
 
 {-	===============================
 	Ex.1 Fast Modular Exponentiation
-	See function 'exM' in Week6.hs
 -}
+
 	  
 {-	========================================
 	Ex.2 Testing Fast Modular Exponentiation
-	
-	Using Criterion for efficiency benchmarking (cannot run criterion on windows 8, due to mingw 32 linking issues)
-
-	main = defaultMain [
-		bgroup "exp" [	bench "expM 7 2048 13" $ whnf (expM 7 2048) 13,
-						bench "exM 7 2048 13" $ whnf (exM 7 2048) 13
-					  ]
-		]
-
-	Result: does not give benefit in terms of program efficiency, but larger input range:
-
-	> expM 2 1000000 5
-	>> segfault/bus error (or crash otherwise)
-
-	> exM  2 1000000 5
-	>> 1 
 
 -}	
 
--- exM' :: Integer -> Integer -> Integer -> Integer
--- exM' _ 0 _ = 1
--- exM' x 1 z = mod x z
--- exM' x y z = mod (x * (exM' x (y-1) z)) z
 
-exM' :: Integer -> Integer -> Integer -> Integer
-exM' x y z  | n == z = exMuP x 1 y z
-            | otherwise = (exMuP x 1 n z) * (rem (x^(y-n)) z)
-                where n = exponentOf2 y
-
--- exMuP x 2 z = (rem x z)^2
--- exMuP x y z = (exMuP x (exponentOf2 (y-1)) z)^2
-
-exMuP :: Integer -> Integer -> Integer -> Integer -> Integer
-exMuP x curExp target modBy | curExp == target = x
-                            | otherwise = exMuP ((mod (x * x) modBy)^2) (curExp*2) target modBy
-
-exponentOf2 x = last $ takeWhile (\y -> x >= y) [2^x | x <- [1..]]
 {-  ================================
 	Ex.3 composite number generation
 -}

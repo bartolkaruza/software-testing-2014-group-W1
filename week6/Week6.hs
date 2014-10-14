@@ -74,8 +74,22 @@ exM :: Integer -> Integer -> Integer -> Integer
 exM b 0 m = 1
 exM b 1 m = b `mod` m
 exM b exp m | even exp = exM (b'^2 `mod` m) (exp `div` 2) m
-			| odd exp =  (b' * (exM b' (exp-1) m)) `mod` m
-	      where b' = b `mod` m
+      | odd exp =  (b' * (exM b' (exp-1) m)) `mod` m
+        where b' = b `mod` m
+
+-- Another approach, trying to follow the slides more narrowly
+exM' :: Integer -> Integer -> Integer -> Integer
+exM' x y z  | n == z = exMuP x 1 y z
+            | otherwise = mod ((exMuP x 1 n z) * (rem (x^(y-n)) z)) z
+                where n = exponentOf2 y
+
+exMuP :: Integer -> Integer -> Integer -> Integer -> Integer
+exMuP x curExp target modBy | curExp == target = x
+                            | otherwise = exMuP ((mod (x * x) modBy)^2) (curExp*2) target modBy
+
+exponentOf2 x = last $ takeWhile (\y -> x >= y) [2^x | x <- [1..]]
+
+
 			
 prime_test_F :: Integer -> IO Bool
 prime_test_F n = do 
