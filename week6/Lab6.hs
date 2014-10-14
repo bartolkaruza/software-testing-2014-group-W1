@@ -17,12 +17,13 @@ carmichael = [ (6*k+1)*(12*k+1)*(18*k+1) |
 
 {-	===============================
 	Ex.1 Fast Modular Exponentiation
+    See exM in Week6.hs
 -}
 
 	  
 {-	========================================
 	Ex.2 Testing Fast Modular Exponentiation
-
+    See Lab6-bench.hs and benchmark.hs
 -}	
 
 
