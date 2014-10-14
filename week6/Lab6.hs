@@ -40,8 +40,8 @@ testCM :: Int -> IO ()
 testCM k = do t <- filterM (\x -> primeF k x) (take 5 carmichael)
               print t
 
-testCM :: Int -> IO ()
-testCM k = do t <- filterM (\x -> primeMR k x) (take 5 carmichael)
+testMR :: Int -> IO ()
+testMR k = do t <- filterM (\x -> primeMR k x) (take 5 carmichael)
               print t
 
 

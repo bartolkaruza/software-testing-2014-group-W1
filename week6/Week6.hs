@@ -68,8 +68,8 @@ expM x y = rem (x^y)
 
 exM :: Integer -> Integer -> Integer -> Integer
 exM x 0 m = 1 
-exM x n m | even n =  (mod (exM x (n `div` 2) m) m) * (mod (exM x (n `div` 2) m) m)
-               | odd n  =  (exM x (n-1) m) * (mod x m) 
+exM x n m | even n =  mod ((exM x (n `div` 2) m) * (exM x (n `div` 2) m)) m
+               | odd n  =  mod ((mod x m) *(exM x (n-1) m)) m 
 			   
 prime_test_F :: Integer -> IO Bool
 prime_test_F n = do 
