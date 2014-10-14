@@ -20,9 +20,9 @@ powerMod x n m | even n =  (mod (powerMod x (n `div` 2) m) m) * (mod (powerMod x
                | odd n  =  (powerMod x (n-1) m) * (mod x m) 
 			   
 composites :: [Integer]
-composites = [2..] \\ primes
+composites = (take 1000 [2..]) \\ (take 1000 primes)
 
-checkPrimeF = verboseCheck getPrimeTestF
+checkPrimeF = quickCheck getPrimeTestF
 
 primeTest_F :: Integer  -> IO Bool
 primeTest_F n = do 
@@ -36,20 +36,17 @@ primeTest_MR n = do
    (primeMR (fromIntegral a) (n-1))
   
 
-getPrimeTestF x | x < 0 = getPrimeTestF (-x)
-                | x == 0 = getPrimeTestF 1
+getPrimeTestF x |  x == 0 = getPrimeTestF 1
                 | otherwise = monadicIO $ do 
-                                  t <- run $ ((primeTest_F (composites !! x)))
+                                  t <- run $ ((primeTest_F (composites !! (abs x))))
                                   assert $ not t
 
-getPrimeTestCM x | x < 0 = getPrimeTestCM (-x)
-                 | x == 0 = getPrimeTestCM 1
+getPrimeTestCM x | x == 0 = getPrimeTestCM 1
                  | otherwise = monadicIO $ do
-                       t <- run $ (primeTest_F (carmichael !! x)) 
+                       t <- run $ (primeTest_F (carmichael !! (abs x))) 
                        assert $ not t 
 
-getPrimeTestMR x | x < 0 = getPrimeTestMR (-x)
-                 | x == 0 = getPrimeTestMR 1
-                 | otherwise =  monadicIO $ do t <- run $ (primeTest_MR (carmichael !! x)) 
+getPrimeTestMR x | x == 0 = getPrimeTestMR 1
+                 | otherwise =  monadicIO $ do t <- run $ (primeTest_MR (carmichael !! (abs x))) 
                                                assert $ not t 
 -- hier een a kiezen met 1 < a < N waarbij N prime en die invullen als eerste argument voor primeF
