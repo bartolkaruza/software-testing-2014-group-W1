@@ -73,10 +73,9 @@ expM x y = rem (x^y)
 exM :: Integer -> Integer -> Integer -> Integer
 exM b 0 m = 1
 exM b 1 m = b `mod` m
-exM b exp m = if exp `mod` 2 == 0
-			  then exM (b'^2 `mod` m) (exp `div` 2) m
-			  else (b' * (exM b' (exp-1) m)) `mod` m
-	          where b' = b `mod` m
+exM b exp m | even exp = exM (b'^2 `mod` m) (exp `div` 2) m
+			| odd exp =  (b' * (exM b' (exp-1) m)) `mod` m
+	      where b' = b `mod` m
 			
 prime_test_F :: Integer -> IO Bool
 prime_test_F n = do 
