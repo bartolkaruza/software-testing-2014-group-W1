@@ -23,15 +23,23 @@ carmichael = [ (6*k+1)*(12*k+1)*(18*k+1) |
 {-	========================================
 	Ex.2 Testing Fast Modular Exponentiation
 	
-	Using Criterion for benchmarking (cannot run criterion on windows 8, due to mingw 32 linking issues)
+	Using Criterion for efficiency benchmarking (cannot run criterion on windows 8, due to mingw 32 linking issues)
 
-
-main = defaultMain [
+	main = defaultMain [
 		bgroup "exp" [	bench "expM 7 2048 13" $ whnf (expM 7 2048) 13,
 						bench "exM 7 2048 13" $ whnf (exM 7 2048) 13
 					  ]
 		]
-	-}	
+
+	Result: does not give benefit in terms of program efficiency, but larger input range:
+
+	> expM 2 1000000 5
+	>> segfault/bus error (or crash otherwise)
+
+	> exM  2 1000000 5
+	>> 1 
+
+-}	
 
 {-  ================================
 	Ex.3 composite number generation
