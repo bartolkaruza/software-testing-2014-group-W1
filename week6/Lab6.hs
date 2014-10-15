@@ -23,7 +23,7 @@ carmichael = [ (6*k+1)*(12*k+1)*(18*k+1) |
 	  
 {-	========================================
 	Ex.2 Testing Fast Modular Exponentiation
-    See Lab6-bench.hs and benchmark.hs
+    See Lab6-bench.hs and benchmark.html
 -}	
 
 
